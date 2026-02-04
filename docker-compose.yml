@@ -40,7 +40,7 @@ services:
       - "3005:3000" # Von außen erreichbar auf Port 3000
     depends_on:
       - rezept_db
-      - ollama
+      #- ollama
     environment:
       # Innerhalb von Docker nutzen wir die Container-Namen als Hostnamen!
       - DATABASE_URL=postgresql://user:password@rezept_db:5432/rezept_db?schema=public
