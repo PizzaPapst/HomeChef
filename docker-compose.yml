@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: rezept_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: securepassword  # Ändern wir später für Prod
+      POSTGRES_DB: rezeptmanager
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rezept_ai
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_data:/root/.ollama # Damit Modelle gespeichert bleiben
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  ollama_data:
