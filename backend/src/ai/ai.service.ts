@@ -6,8 +6,8 @@ export class AiService {
   
   // WICHTIG: Wenn dein NestJS lokal läuft und Ollama in Docker: 'http://localhost:11434'
   // Wenn beides in Docker läuft: 'http://ollama:11434'
-  private readonly OLLAMA_URL = 'http://localhost:11434/api/generate'; 
-
+  private readonly OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434/api/generate';
+  
   async parseRecipeFromHtml(textContext: string): Promise<any> {
     this.logger.log('Starte KI-Analyse des Textes...');
 

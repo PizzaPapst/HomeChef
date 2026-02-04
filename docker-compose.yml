@@ -1,28 +1,47 @@
-version: '3.8'
-
 services:
-  db:
-    image: postgres:16-alpine
+  # 1. Datenbank (bleibt wie es ist)
+  rezept_db:
+    image: postgres:15
     container_name: rezept_db
-    restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: securepassword  # Ändern wir später für Prod
-      POSTGRES_DB: rezeptmanager
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: rezept_db
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
 
+  # 2. KI (bleibt wie es ist)
   ollama:
     image: ollama/ollama:latest
     container_name: rezept_ai
     ports:
-      - "11435:11434"
+      - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama # Damit Modelle gespeichert bleiben
-    restart: unless-stopped
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: always # (Tipp: 'unless-stopped' ist auch ok)
+
+  # 3. NEU: Dein Backend Server
+  backend:
+    build:
+      context: ./backend # Hier liegt das Dockerfile
+      dockerfile: Dockerfile
+    container_name: homechef_backend
+    ports:
+      - "3000:3000" # Von außen erreichbar auf Port 3000
+    depends_on:
+      - rezept_db
+      - ollama
+    environment:
+      # Innerhalb von Docker nutzen wir die Container-Namen als Hostnamen!
+      - DATABASE_URL=postgresql://user:password@rezept_db:5432/rezept_db?schema=public
+      - OLLAMA_URL=http://ollama:11434/api/generate
+    restart: always
 
 volumes:
-  db_data:
+  postgres_data:
   ollama_data:
