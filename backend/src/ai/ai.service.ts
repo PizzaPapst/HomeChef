@@ -4,69 +4,101 @@ import { Injectable, Logger } from '@nestjs/common';
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   
-  // WICHTIG: Wenn dein NestJS lokal läuft und Ollama in Docker: 'http://localhost:11434'
-  // Wenn beides in Docker läuft: 'http://ollama:11434'
   private readonly OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434/api/generate';
-  
+  private readonly GEMINI_KEY = process.env.GEMINI_API_KEY; // Liest den Key
+
   async parseRecipeFromHtml(textContext: string): Promise<any> {
-    this.logger.log('Starte KI-Analyse des Textes...');
+    const cleanText = textContext.replace(/\s+/g, ' ').substring(0, 15000);
 
-    // Text kürzen, um Token-Limit und Performance zu schonen (erste 10.000 Zeichen reichen meist)
-    const cleanText = textContext.replace(/\s+/g, ' ').substring(0, 10000);
-
+    // Prompt bleibt fast gleich, wir bitten aber explizit um JSON ohne Markdown
     const prompt = `
-      Du bist ein Parser für Rezepte. Extrahiere strukturierte Daten aus dem folgenden Text.
-      Antworte AUSSCHLIESSLICH mit validem JSON.
+      Du bist ein Parser für Rezepte. Extrahiere strukturierte Daten aus dem Text.
+      Antworte NUR mit validem JSON. Keine Markdown-Formatierung (\`\`\`json), kein Text davor/danach.
       
-      Die JSON-Struktur MUSS so aussehen (Schema.org Stil):
+      Struktur:
       {
-        "name": "Name des Gerichts",
-        "description": "Kurzbeschreibung",
+        "name": "Gericht Name",
+        "description": "Beschreibung",
         "recipeYield": 4,
         "prepTime": "PT30M", 
         "totalTime": "PT60M",
-        "recipeIngredient": ["500g Mehl", "2 Eier", "Salz"],
-        "recipeInstructions": ["Schritt 1...", "Schritt 2..."]
+        "recipeIngredient": ["Zutat 1", "Zutat 2"],
+        "recipeInstructions": ["Schritt 1", "Schritt 2"]
       }
-
-      Falls Informationen fehlen (z.B. Zeit), setze sie auf null oder schätze konservativ.
-      Falls absolut kein Rezept im Text zu finden ist, antworte mit {"error": "no recipe found"}.
-
-      Hier ist der Text:
+      
+      Text:
       ${cleanText}
     `;
 
+    // ENTSCHEIDUNG: Google oder Ollama?
+    if (this.GEMINI_KEY) {
+        return this.askGemini(prompt);
+    } else {
+        return this.askOllama(prompt);
+    }
+  }
+
+  // --- GOOGLE GEMINI STRATEGIE ---
+  private async askGemini(prompt: string) {
+      this.logger.log('Nutze Google Gemini Cloud...');
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.GEMINI_KEY}`;
+
+      try {
+          const response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  contents: [{
+                      parts: [{ text: prompt }]
+                  }],
+                  generationConfig: {
+                      responseMimeType: "application/json" // Gemini Feature: Garantiert JSON!
+                  }
+              })
+          });
+
+          const data = await response.json();
+
+          if (data.error) {
+              throw new Error(data.error.message);
+          }
+
+          // Gemini Antwort Struktur parsen
+          const textResponse = data.candidates[0].content.parts[0].text;
+          const parsed = JSON.parse(textResponse);
+          
+          this.logger.log(`Gemini Erfolg: "${parsed.name}"`);
+          return parsed;
+
+      } catch (error) {
+          this.logger.error('Gemini Fehler:', error);
+          return null;
+      }
+  }
+
+  // --- OLLAMA STRATEGIE (Fallback) ---
+  private async askOllama(prompt: string) {
+    this.logger.log('Nutze lokales Ollama...');
     try {
-      // Wir nutzen fetch (Node 18+ Standard)
       const response = await fetch(this.OLLAMA_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'ministral-3:3b', // Stelle sicher, dass du 'docker exec -it rezept_ai ollama run llama3' gemacht hast!
+          model: 'llama3', 
           prompt: prompt,
           stream: false,
-          format: 'json' // Zwingt Ollama zu JSON
+          format: 'json'
         }),
       });
 
       const data = await response.json();
+      if (!data.response) throw new Error('Empty response');
       
-      if (!data.response) {
-        throw new Error('Leere Antwort von Ollama');
-      }
-
       const parsed = JSON.parse(data.response);
-      
-      if (parsed.error) {
-          this.logger.warn('KI konnte kein Rezept finden.');
-          return null;
-      }
-
-      this.logger.log(`KI hat Rezept extrahiert: "${parsed.name}"`);
+      this.logger.log(`Ollama Erfolg: "${parsed.name}"`);
       return parsed;
-
     } catch (error) {
-      this.logger.error('KI Verbindung fehlgeschlagen (Läuft der Container?):', error.message);
+      this.logger.error('Ollama Fehler:', error);
       return null;
     }
   }
