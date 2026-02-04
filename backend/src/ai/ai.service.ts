@@ -3,6 +3,16 @@ import { Injectable, Logger } from '@nestjs/common';
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
+
+  constructor() {
+    // DEBUG: Zeigt uns beim Start, ob der Key geladen wurde
+    const key = process.env.GEMINI_API_KEY;
+    if (key) {
+        this.logger.log(`✅ Gemini API Key gefunden! (Startet mit: ${key.substring(0, 5)}...)`);
+    } else {
+        this.logger.warn('❌ Kein Gemini API Key gefunden. Nutze Fallback auf Ollama.');
+    }
+  }
   
   private readonly OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434/api/generate';
   private readonly GEMINI_KEY = process.env.GEMINI_API_KEY; // Liest den Key
@@ -41,7 +51,7 @@ export class AiService {
   // --- GOOGLE GEMINI STRATEGIE ---
   private async askGemini(prompt: string) {
       this.logger.log('Nutze Google Gemini Cloud...');
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.GEMINI_KEY}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${this.GEMINI_KEY}`;
 
       try {
           const response = await fetch(url, {

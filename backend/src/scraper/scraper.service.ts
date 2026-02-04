@@ -203,7 +203,7 @@ export class ScraperService {
     return {
       title: data.name || 'KI-Generiertes Rezept', // Fallback
       sourceUrl: originalUrl,
-      imageUrl: Array.isArray(data.image) ? data.image[0] : (data.image?.url || data.image),
+      imageUrl: this.extractImageUrl(data.image),
       servings: parseInt(data.recipeYield) || 4,
       prepTime: this.parseDuration(timeString), 
       ingredients: ingredients,
@@ -238,5 +238,25 @@ export class ScraperService {
     if (match[1]) minutes += parseInt(match[1]) * 60;
     if (match[2]) minutes += parseInt(match[2]);
     return minutes;
+  }
+
+  // --- Helper: Bild-URL sicher extrahieren ---
+  private extractImageUrl(imageField: any): string {
+    if (!imageField) return '';
+
+    // Fall 1: Es ist direkt ein String
+    if (typeof imageField === 'string') return imageField;
+
+    // Fall 2: Es ist ein Array -> Wir nehmen das erste Element und prüfen rekursiv
+    if (Array.isArray(imageField)) {
+        return this.extractImageUrl(imageField[0]);
+    }
+
+    // Fall 3: Es ist ein Objekt (ImageObject) -> Wir brauchen die 'url' Eigenschaft
+    if (typeof imageField === 'object' && imageField.url) {
+        return imageField.url;
+    }
+
+    return '';
   }
 }
