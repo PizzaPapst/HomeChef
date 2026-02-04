@@ -1,5 +1,5 @@
 services:
-  # 1. Datenbank (bleibt wie es ist)
+  # 1. Datenbank
   rezept_db:
     image: postgres:15
     container_name: rezept_db
@@ -10,44 +10,45 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # ÄNDERUNG: Speichert jetzt lokal in deinem Ordner ./data/postgres
+      - ./data/postgres:/var/lib/postgresql/data
     restart: always
 
-  # 2. KI (bleibt wie es ist)
+  # 2. KI (Auskommentiert, aber Pfad für Zukunft angepasst)
   # ollama:
   #   image: ollama/ollama:latest
   #   container_name: rezept_ai
-  #   # ... ports, volumes etc. ...
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     # ÄNDERUNG: Würde in ./data/ollama speichern
+  #     - ./data/ollama:/root/.ollama
   #   environment:
   #     - OLLAMA_HOST=0.0.0.0
-  #     # WICHTIG: Begrenze, wie viele Modelle gleichzeitig im RAM bleiben (default ist 5 min)
   #     - OLLAMA_KEEP_ALIVE=5m 
   #   deploy:
   #     resources:
   #       limits:
-  #         memory: 7G  # Hartes Limit: Mehr bekommt er nicht.
+  #         memory: 7G 
   #       reservations:
-  #         memory: 4G  # Das garantiert er sich mindestens.
+  #         memory: 4G
   #   restart: always
 
-  # 3. NEU: Dein Backend Server
+  # 3. Backend
   backend:
     build:
-      context: ./backend # Hier liegt das Dockerfile
+      context: ./backend
       dockerfile: Dockerfile
     container_name: homechef_backend
     ports:
-      - "3005:3000" # Von außen erreichbar auf Port 3000
+      - "3005:3000" # Erreichbar unter Port 3005
     depends_on:
       - rezept_db
-      #- ollama
+      # - ollama
     environment:
-      # Innerhalb von Docker nutzen wir die Container-Namen als Hostnamen!
       - DATABASE_URL=postgresql://user:password@rezept_db:5432/rezept_db?schema=public
-      #- OLLAMA_URL=http://ollama:11434/api/generate
+      # - OLLAMA_URL=http://ollama:11434/api/generate
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     restart: always
 
-volumes:
-  postgres_data:
-  ollama_data:
+# Der Block 'volumes:' ist weg, da wir keine Docker-Volumes mehr nutzen.
