@@ -50,5 +50,3 @@ services:
       # - OLLAMA_URL=http://ollama:11434/api/generate
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     restart: always
-
-# Der Block 'volumes:' ist weg, da wir keine Docker-Volumes mehr nutzen.

@@ -1,44 +1,34 @@
-import { useState, useEffect } from 'react'
-import { fetchAllRecipes } from './services/api'
-import './App.css'
+import { Routes, Route, useLocation } from "react-router-dom"; // useLocation importieren
+import Cookbook from "./pages/Cookbook";
+import WeeklyPlan from "./pages/WeeklyPlan";
+import RecipeDetail from "./pages/RecipeDetail"; // Importieren
+import { MobileNavigation } from "./components/MobileNavigation";
 
 function App() {
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
-  // Wird beim Starten der Komponente ausgeführt
-  useEffect(() => {
-    // Da useEffect nicht direkt async sein darf, bauen wir eine Hilfsfunktion
-    const loadData = async () => {
-      const data = await fetchAllRecipes();
-      setRecipes(data);
-      setLoading(false);
-    };
+  // Liste der Seiten, auf denen die Navigation sichtbar sein soll
+  // Alles andere (wie /recipe/123) hat KEINE Navigation.
+  const showNavRoutes = ["/", "/plan"];
 
-    loadData();
-  }, []);
-
-  if (loading) return <p>Lade Rezepte...</p>;
+  // Prüfen, ob der aktuelle Pfad in der Liste ist
+  const shouldShowNav = showNavRoutes.includes(location.pathname);
 
   return (
-    <div className="container">
-      <h1>Meine Rezepte 🍲</h1>
+    // pb-24 (Padding unten) brauchen wir nur, wenn die Nav da ist, sonst stört der Platz
+    <div className={`bg-brand-teal min-h-screen font-sans ${shouldShowNav ? "pb-24" : ""}`}>
       
-      {recipes.length === 0 ? (
-        <p>Noch keine Rezepte vorhanden.</p>
-      ) : (
-        <div className="recipe-grid">
-          {recipes.map((recipe) => (
-            <div key={recipe.id} style={{ border: '1px solid #ccc', padding: '10px', margin: '10px', borderRadius: '8px' }}>
-              {recipe.imageUrl && (
-                <img src={recipe.imageUrl} alt={recipe.title} style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '5px' }} />
-              )}
-              <h3>{recipe.title}</h3>
-              <p>⏳ {recipe.prepTime ? recipe.prepTime + ' Min.' : '?'}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <Routes>
+        <Route path="/" element={<Cookbook />} />
+        <Route path="/plan" element={<WeeklyPlan />} />
+        
+        {/* Der Doppelpunkt :id ist ein Platzhalter für irgendeine Nummer */}
+        <Route path="/recipe/:id" element={<RecipeDetail />} />
+      </Routes>
+
+      {/* Bedingtes Rendern: Nur anzeigen wenn true */}
+      {shouldShowNav && <MobileNavigation />}
+      
     </div>
   )
 }
