@@ -1,0 +1,23 @@
+# --- WICHTIG: Datenbank & KI Daten ---
+data/
+*/data/
+
+# --- Sicherheit: Keine Passwörter/Keys ---
+.env
+.env.local
+.env.*.local
+*.pem
+
+# --- Systemdateien (Müll) ---
+.DS_Store
+Thumbs.db
+node_modules/
+npm-debug.log
+
+# --- IDE Einstellungen (Optional) ---
+.vscode/
+.idea/
+
+# --- Build Ordner (falls mal was im Root landet) ---
+dist/
+build/

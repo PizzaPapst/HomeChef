@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
@@ -18,8 +18,9 @@ export class RecipesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.recipesService.findOne(+id);
+  // ParseIntPipe wandelt "5" (String) automatisch in 5 (Number) um
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.recipesService.findOne(id);
   }
 
   @Patch(':id')
