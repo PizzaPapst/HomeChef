@@ -8,7 +8,7 @@ function NavItem({ to, icon: Icon, label }) {
       to={to}
       className={({ isActive }) =>
         `flex flex-col items-center gap-1 transition-all w-full ${
-          isActive ? "text-brand-teal" : "text-gray-400 opacity-60"
+          isActive ? "text-brand-teal" : "text-text-default"
         }`
       }
     >
@@ -23,7 +23,7 @@ function NavItem({ to, icon: Icon, label }) {
             <Icon
               size={24}
               weight={isActive ? "fill" : "regular"}
-              className={isActive ? "text-brand-teal" : "text-gray-600"}
+              className={isActive ? "text-brand-teal" : "text-text-default"}
             />
           </div>
           <span className={`text-xs ${isActive ? "font-semibold" : "font-medium"}`}>{label}</span>
@@ -36,7 +36,7 @@ function NavItem({ to, icon: Icon, label }) {
 // 2. Deine eigentliche Navigation ist jetzt extrem sauber:
 export function MobileNavigation() {
   return (
-    <nav className="fixed bottom-0 w-full bg-white border-t border-gray-100 px-6 py-4 flex justify-between items-center">
+    <nav className="w-full bg-white border-t-2 border-border-default px-6 py-4 flex justify-between items-center">
       
       <NavItem 
         to="/" 

@@ -5,6 +5,6 @@
 /* NEU: Globaler Hintergrund */
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900; /* Hintergrund & Standard-Textfarbe */
+    @apply bg-brand-teal text-text-default; /* Hintergrund & Standard-Textfarbe */
   }
 }
