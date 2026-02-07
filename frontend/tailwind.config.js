@@ -16,7 +16,10 @@ export default {
         'custom-bg': '#FCFDFD',      // Dein Hintergrundgrau aus Figma?
         'brand-teal': '#28AFB0',     // Dein spezielles Türkis
         'brand-orange': '#FF785A',
-        'teal-light': '#D5F5F5'   // Dein spezielles Orange
+        'teal-light': '#D5F5F5',
+        'text-default': '#201E1F',
+        'text-subinfo': '#847B7F',
+        'border-default': '#DCDFDD'   // Dein spezielles Orange
       }
     },
   },
