@@ -50,3 +50,17 @@ services:
       # - OLLAMA_URL=http://ollama:11434/api/generate
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     restart: always
+  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      # Hier übergeben wir die Variable an den Build-Prozess
+      args:
+        # ACHTUNG: Hier muss die ECHTE IP deines Homeservers rein!
+        # "localhost" funktioniert hier NICHT, weil das Handy nicht "localhost" ist.
+        - VITE_API_URL=http://192.168.178.104:3005 
+    container_name: homechef_frontend
+    ports:
+      - "80:80" # Frontend erreichbar unter Port 80
+    restart: always
