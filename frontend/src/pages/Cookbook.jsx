@@ -35,7 +35,9 @@ export default function Cookbook() {
   return (
     <div className="flex flex-1 flex-col gap-1">
 
-      <div className="p-4 h-[76px]"></div>
+      <div className="p-4 h-[76px]">
+        
+      </div>
 
       <div className="bg-custom-bg flex flex-col flex-1 gap-8 px-4 pt-6 pb-4 rounded-t-3xl pb-[102px]">
         <div className="flex flex-col gap-4">
