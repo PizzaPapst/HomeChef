@@ -31,7 +31,7 @@ model Recipe {
 model Ingredient {
   id       Int    @id @default(autoincrement())
   name     String
-  amount   String? 
+  amount   Float? 
   unit     String?
   
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)

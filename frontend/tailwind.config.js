@@ -15,7 +15,9 @@ export default {
   		},
   		colors: {
   			'custom-bg': '#FCFDFD',
+			'alternative-bg': '#F1F4F4',
   			'brand-teal': '#28AFB0',
+			'brand-teal-10': '#D5F5F5',
   			'brand-orange': '#FF785A',
   			'teal-light': '#D5F5F5',
   			'text-default': '#201E1F',

@@ -4,6 +4,8 @@ import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer-extra'; 
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { AiService } from '../ai/ai.service';
+// --- NEU: Import für den Parser ---
+import { parseIngredient } from 'parse-ingredient';
 
 // Interface für das Rückgabe-Format unserer Fetcher
 interface FetchResult {
@@ -177,39 +179,112 @@ export class ScraperService {
       }
   }
 
-  private mapSchemaToRecipe(data: any, originalUrl: string) {
-    // Zutaten bereinigen
-    const ingredients = (data.recipeIngredient || []).map(ing => {
-        return { 
-          name: ing.toString().replace(/\s+/g, ' ').trim(), 
-          amount: '', 
-          unit: '' 
-        };
+private mapSchemaToRecipe(data: any, originalUrl: string) {
+    // --- 1. Zutaten bereinigen & parsen ---
+    const ingredients = (data.recipeIngredient || []).map((ing: any) => {
+      // Fall A: Es ist ein String
+      if (typeof ing === 'string') {
+        try {
+          // WICHTIG: Komma zu Punkt wandeln
+          const cleanIng = ing.replace(',', '.').replace(/\s+/g, ' ').trim();
+
+          // Parsen mit deutscher Config + alternates: []
+          const parsed = parseIngredient(cleanIng, {
+            additionalUOMs: {
+              // Esslöffel
+              'EL': { short: 'EL', plural: 'Esslöffel', alternates: [] },
+              'El': { short: 'EL', plural: 'Esslöffel', alternates: [] },
+              'el': { short: 'EL', plural: 'Esslöffel', alternates: [] },
+              'Esslöffel': { short: 'EL', plural: 'Esslöffel', alternates: [] },
+
+              // Teelöffel
+              'TL': { short: 'TL', plural: 'Teelöffel', alternates: [] },
+              'Tl': { short: 'TL', plural: 'Teelöffel', alternates: [] },
+              'tl': { short: 'TL', plural: 'Teelöffel', alternates: [] },
+              'Teelöffel': { short: 'TL', plural: 'Teelöffel', alternates: [] },
+
+              // Gramm
+              'g': { short: 'g', plural: 'Gramm', alternates: [] },
+              'gr': { short: 'g', plural: 'Gramm', alternates: [] },
+              'Gramm': { short: 'g', plural: 'Gramm', alternates: [] },
+
+              // Kilo
+              'kg': { short: 'kg', plural: 'Kilogramm', alternates: [] },
+              'kilo': { short: 'kg', plural: 'Kilogramm', alternates: [] },
+
+              // Liter / ML
+              'l': { short: 'l', plural: 'Liter', alternates: [] },
+              'Liter': { short: 'l', plural: 'Liter', alternates: [] },
+              'ml': { short: 'ml', plural: 'Milliliter', alternates: [] },
+              'mL': { short: 'ml', plural: 'Milliliter', alternates: [] },
+
+              // Stückwerk / Verpackung
+              'Dose': { short: 'Dose', plural: 'Dosen', alternates: [] },
+              'Dose(n)': { short: 'Dose', plural: 'Dosen', alternates: [] },
+              'Zehe': { short: 'Zehe', plural: 'Zehen', alternates: [] },
+              'Zehen': { short: 'Zehe', plural: 'Zehen', alternates: [] },
+              'Zehe(n)': { short: 'Zehe', plural: 'Zehen', alternates: [] },
+              'Knoblauchzehe': { short: 'Zehe', plural: 'Zehen', alternates: [] },
+              'Pck': { short: 'Pck.', plural: 'Packungen', alternates: [] },
+              'Pck.': { short: 'Pck.', plural: 'Packungen', alternates: [] },
+              'Packung': { short: 'Pck.', plural: 'Packungen', alternates: [] },
+              'Prise': { short: 'Prise', plural: 'Prisen', alternates: [] },
+              'Msp': { short: 'Msp.', plural: 'Messerspitzen', alternates: [] },
+              'Bund': { short: 'Bund', plural: 'Bund', alternates: [] },
+              'Stück': {short: 'Stk.', plural: 'Stück', alternates: []},
+              'Stk': {short: 'Stk.', plural: 'Stück', alternates: []},
+              'Stk.': {short: 'Stk.', plural: 'Stück', alternates: []},
+            },
+          });
+
+          // Wenn Parsing erfolgreich war
+          if (parsed && parsed.length > 0) {
+            return {
+              name: parsed[0].description || cleanIng, 
+              amount: parsed[0].quantity || 0,        
+              unit: parsed[0].unitOfMeasure || ''      
+            };
+          }
+        } catch (e) {
+          this.logger.warn(`Konnte Zutat nicht parsen: ${ing}`);
+        }
+
+        // Fallback
+        return { name: ing.replace(/\s+/g, ' ').trim(), amount: 0, unit: '' };
+      }
+
+      // Fall B: Objekt
+      return {
+        name: ing.name || '',
+        amount: ing.amount || 0,
+        unit: ing.unit || ''
+      };
     });
 
-    // Instructions normalisieren (Rekursiv)
+    // --- 2. Instructions (Unverändert) ---
     const rawInstructions = this.normalizeInstructions(data.recipeInstructions);
     const instructions = rawInstructions
-        .map(text => this.cleanText(text))
-        .filter(text => text && text.length > 5)
-        .map((text, index) => ({
-            step: index + 1,
-            text: text
-        }));
+      .map(text => this.cleanText(text))
+      .filter(text => text && text.length > 5)
+      .map((text, index) => ({
+        step: index + 1,
+        text: text
+      }));
 
-    // Zeiten
+    // --- 3. Zeiten (Unverändert) ---
     const timeString = data.prepTime || data.totalTime || data.cookTime;
 
+    // --- 4. Return (Unverändert) ---
     return {
-      title: data.name || 'KI-Generiertes Rezept', // Fallback
+      title: data.name || 'KI-Generiertes Rezept',
       sourceUrl: originalUrl,
       imageUrl: this.extractImageUrl(data.image),
       servings: parseInt(data.recipeYield) || 4,
-      prepTime: this.parseDuration(timeString), 
+      prepTime: this.parseDuration(timeString),
       ingredients: ingredients,
       instructions: instructions
     };
-  }
+  }  
 
   private normalizeInstructions(data: any): string[] {
     if (!data) return [];
