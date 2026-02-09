@@ -62,5 +62,5 @@ services:
         - VITE_API_URL=${VITE_API_URL} 
     container_name: homechef_frontend
     ports:
-      - "80:80" # Frontend erreichbar unter Port 80
+      - "81:80" # Frontend erreichbar unter Port 80
     restart: always
