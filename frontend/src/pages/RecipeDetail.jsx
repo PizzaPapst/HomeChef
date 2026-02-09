@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Clock, Fire, ArrowLeft } from "@phosphor-icons/react";
 import { PortionStepper } from "@/components/PortionStepper";
 import IngredientEntry from "../components/IngredientEntry";
-import CookingStep from "@/components/cookingStep";
+import CookingStep from "@/components/CookingStep";
 import { Button } from "@/components/ui/button";
 
 export default function RecipeDetail() {
