@@ -59,7 +59,7 @@ services:
       args:
         # ACHTUNG: Hier muss die ECHTE IP deines Homeservers rein!
         # "localhost" funktioniert hier NICHT, weil das Handy nicht "localhost" ist.
-        - VITE_API_URL=http://192.168.178.104:3005 
+        - VITE_API_URL=${VITE_API_URL} 
     container_name: homechef_frontend
     ports:
       - "80:80" # Frontend erreichbar unter Port 80
