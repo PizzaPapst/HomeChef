@@ -11,27 +11,25 @@ export class RecipesService {
     private scraperService: ScraperService, // <--- Hier injizieren wir den Scraper
   ) {}
 
-  async create(createRecipeDto: CreateRecipeDto) {
-    // 1. Daten von der URL scrapen
-    console.log(`Starte Scraping für: ${createRecipeDto.url}`);
-    const scrapedData = await this.scraperService.scrapeRecipe(createRecipeDto.url);
+  async analyzeRecipe(url: string) {
+    // Ruft den Scraper, speichert aber NICHTS in der DB
+    return await this.scraperService.scrapeRecipe(url);
+  }
 
-    // 2. In der Datenbank speichern
-    // Prisma ist sehr mächtig: Wir können Zutaten & Schritte in einem Rutsch speichern ("Nested Writes")
+  async create(data: CreateRecipeDto) {
+    // Nimmt das fertige DTO und schreibt es in die DB
     return this.prisma.recipe.create({
       data: {
-        title: scrapedData.title,
-        sourceUrl: createRecipeDto.url, // Wir nehmen die URL aus dem DTO, die ist sicher
-        imageUrl: scrapedData.imageUrl,
-        servings: scrapedData.servings,
-        prepTime: scrapedData.prepTime,
-        
-        // Relationen anlegen
+        title: data.title,
+        sourceUrl: data.sourceUrl,
+        imageUrl: data.imageUrl,
+        servings: data.servings,
+        prepTime: data.prepTime,
         ingredients: {
-          create: scrapedData.ingredients, // Das Array passt direkt, da wir es im Scraper passend geformt haben
+          create: data.ingredients, // Passt direkt, da Struktur identisch
         },
         instructions: {
-          create: scrapedData.instructions,
+          create: data.instructions, // Passt auch direkt
         },
       },
     });

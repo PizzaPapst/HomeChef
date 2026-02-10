@@ -6,6 +6,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { AiService } from '../ai/ai.service';
 // --- NEU: Import für den Parser ---
 import { parseIngredient } from 'parse-ingredient';
+import { CreateRecipeDto } from '../recipes/dto/create-recipe.dto';
 
 // Interface für das Rückgabe-Format unserer Fetcher
 interface FetchResult {
@@ -21,7 +22,7 @@ export class ScraperService {
     puppeteer.use(StealthPlugin());
   }
 
-  async scrapeRecipe(url: string) {
+  async scrapeRecipe(url: string): Promise<CreateRecipeDto> {
     let result: FetchResult = { data: null, htmlText: '' };
 
     try {
@@ -179,7 +180,7 @@ export class ScraperService {
       }
   }
 
-private mapSchemaToRecipe(data: any, originalUrl: string) {
+private mapSchemaToRecipe(data: any, originalUrl: string): CreateRecipeDto {
     // --- 1. Zutaten bereinigen & parsen ---
     const ingredients = (data.recipeIngredient || []).map((ing: any) => {
       // Fall A: Es ist ein String
@@ -276,13 +277,24 @@ private mapSchemaToRecipe(data: any, originalUrl: string) {
 
     // --- 4. Return (Unverändert) ---
     return {
-      title: data.name || 'KI-Generiertes Rezept',
+      title: data.name || 'Unbekanntes Rezept',
       sourceUrl: originalUrl,
-      imageUrl: this.extractImageUrl(data.image),
+      imageUrl: this.extractImageUrl(data.image) || '', // Leere Strings statt undefined
       servings: parseInt(data.recipeYield) || 4,
-      prepTime: this.parseDuration(timeString),
-      ingredients: ingredients,
-      instructions: instructions
+      prepTime: this.parseDuration(timeString) || 0,
+      
+      // Zutaten Array mappen
+      ingredients: ingredients.map(ing => ({
+        name: ing.name || '',
+        amount: Number(ing.amount) || 0,
+        unit: ing.unit || ''
+      })),
+      
+      // Schritte Array mappen
+      instructions: instructions.map((inst, index) => ({
+        step: index + 1,
+        text: inst.text || ''
+      }))
     };
   }  
 
