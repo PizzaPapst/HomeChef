@@ -1,8 +1,11 @@
-import { Link } from "react-router-dom";
 import { RecipeCard } from "../components/RecipeCard";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Plus } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
 
 export default function Cookbook() {
+  const navigate = useNavigate();
   const [recipes, setRecipes] = useState([])
 
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -52,6 +55,15 @@ export default function Cookbook() {
             })}
         </div>
       </div>
+      
+      <Button
+        size="icon"
+        className="fixed bottom-24 right-6 h-[80px] w-[80px] rounded-xl shadow-xl z-50 transition-transform active:scale-95 shadow-fab-shadow text-text-inverted bg-brand-orange"
+        onClick={() => navigate("/recipe/create")}
+      >
+        <Plus size={28} weight="bold"/>
+        <span className="sr-only">Neues Rezept erstellen</span>
+      </Button>
     </div>
   )
 }

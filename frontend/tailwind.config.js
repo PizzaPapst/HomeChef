@@ -22,6 +22,8 @@ export default {
   			'teal-light': '#D5F5F5',
   			'text-default': '#201E1F',
   			'text-subinfo': '#847B7F',
+  			'text-label': '#5C5659',
+  			'text-inverted': '#F6F9F9',
   			'border-default': '#DCDFDD',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -72,6 +74,7 @@ export default {
 		boxShadow: {
         // Name: 'Wert 1, Wert 2' (kommagetrennt)
         'card-shadow': '0 1px 2px -1px rgba(0, 0, 0, 0.1), 0 2px 6px 0 rgba(0, 0, 0, 0.1)',
+        'fab-shadow': '0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.3)',
       	}
   	}
   },
