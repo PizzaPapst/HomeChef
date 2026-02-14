@@ -17,7 +17,7 @@ function App() {
 
   return (
     // pb-24 (Padding unten) brauchen wir nur, wenn die Nav da ist, sonst stört der Platz
-    <div className={`bg-brand-teal min-h-screen font-sans flex flex-col`}>
+    <div className={`bg-custom-bg min-h-screen font-sans flex flex-col`}>
       
       <Routes>
         <Route path="/" element={<Cookbook />} />

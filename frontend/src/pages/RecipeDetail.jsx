@@ -49,46 +49,37 @@ export default function RecipeDetail() {
 
   return (
     <div className="flex flex-1 flex-col gap-1">
-    
-          <div className="p-4 h-[76px] flex items-center">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={() => navigate(-1)}
-              className="h-12 w-12 rounded-2xl bg-white p-0"
-            >
-              <ArrowLeft size={28} weight="bold" />
-              <span className="sr-only">Zurück</span> {/* Wichtig für Screenreader! */}
-            </Button>
-          </div>
-    
-          <div className="bg-custom-bg flex flex-col flex-1 gap-8 px-4 pt-6 pb-4 rounded-t-3xl">
+          <div className="bg-custom-bg flex flex-col flex-1 gap-8">
             <div className="flex flex-col gap-4 w-full">
-              <h1 className="text-2xl font-bold">{recipe.title}</h1>
-
               <img 
                 src={image} 
                 alt={recipe.title} 
-                className="object-cover w-full rounded-lg aspect-[16/9]"
+                className="object-cover w-full aspect-[1/1]"
               />
-              <div className="flex flex-1">
-                <div className="flex flex-1 justify-center gap-1 text-text-subinfo">
+              
+              <div className="flex flex-col gap-4 w-full px-4">
+
+              <h1 className="text-2xl font-bold">{recipe.title}</h1>
+              
+              <div className="flex flex-1 gap-2">
+                <div className="flex justify-center gap-1 text-text-subinfo">
                   <Clock
                     size={22}
-                  />
+                    />
                   <p>{recipe.prepTime} Min.</p>
                 </div>
       
-                <div className="flex flex-1 justify-center gap-1 text-text-subinfo">
+                <div className="flex justify-center gap-1 text-text-subinfo">
                   <Fire
                     size={22}
-                  />
+                    />
                   <p>{"Platzhalter"} kcal</p>
+                </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 px-4">
               <h2 className="font-semibold text-lg">Zutaten</h2>
               <PortionStepper 
                 servings={currentServings} 
@@ -101,15 +92,24 @@ export default function RecipeDetail() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 px-4">
               <h2 className="font-semibold text-lg">Zubereitung</h2>
                 {
                   recipe.instructions && recipe.instructions.map((item, id)=><CookingStep key={id} step={item.step} text={item.text}  />)
                 }
             </div>
 
-          </div>
+          </div> 
 
-        </div>
+          <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={() => navigate(-1)}
+              className="h-12 w-12 rounded-full bg-white p-0 absolute top-4 left-4 z-50"
+            >
+              <ArrowLeft size={28} weight="bold" />
+              <span className="sr-only">Zurück</span> {/* Wichtig für Screenreader! */}
+            </Button>
+    </div>
   )
 }
