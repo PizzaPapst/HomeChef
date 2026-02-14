@@ -62,11 +62,43 @@ export class RecipesService {
     return recipe;
   }
 
-  update(id: number, updateRecipeDto: UpdateRecipeDto) {
-    return `This action updates a #${id} recipe`;
-  }
+  async update(id: number, updateRecipeDto: UpdateRecipeDto) {
+  return this.prisma.recipe.update({
+    where: { id },
+    data: {
+      title: updateRecipeDto.title,
+      sourceUrl: updateRecipeDto.sourceUrl,
+      imageUrl: updateRecipeDto.imageUrl,
+      servings: updateRecipeDto.servings,
+      prepTime: updateRecipeDto.prepTime,
 
-  remove(id: number) {
-    return `This action removes a #${id} recipe`;
-  }
+      // --- ZUTATEN ---
+      // Prüfung: Sind Zutaten im Update enthalten?
+      ingredients: updateRecipeDto.ingredients ? {
+        deleteMany: {}, // 1. Alles löschen
+        create: updateRecipeDto.ingredients.map(ing => ({ // 2. Neu anlegen
+          name: ing.name,
+          amount: ing.amount,
+          unit: ing.unit,
+        })),
+      } : undefined, // Wenn keine Zutaten im DTO -> Prisma ignoriert das Feld (ändert nichts)
+
+      // --- ANLEITUNGEN ---
+      // Gleiche Logik hier:
+      instructions: updateRecipeDto.instructions ? {
+        deleteMany: {},
+        create: updateRecipeDto.instructions.map(instr => ({
+          step: instr.step,
+          text: instr.text,
+        })),
+      } : undefined,
+    },
+  });
+}
+
+ remove(id: number) {
+  return this.prisma.recipe.delete({
+    where: { id },
+  });
+}
 }

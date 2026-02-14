@@ -4,6 +4,7 @@ import WeeklyPlan from "./pages/WeeklyPlan";
 import RecipeDetail from "./pages/RecipeDetail"; // Importieren
 import RecipeWizard from "./pages/RecipeWizard"; // Importieren
 import { MobileNavigation } from "./components/MobileNavigation";
+import EditRecipePage from "./pages/EditRecipePage";
 
 function App() {
   const location = useLocation();
@@ -26,6 +27,7 @@ function App() {
         {/* Der Doppelpunkt :id ist ein Platzhalter für irgendeine Nummer */}
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/recipe/create" element={<RecipeWizard />} />
+        <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
       </Routes>
 
       {/* Bedingtes Rendern: Nur anzeigen wenn true */}

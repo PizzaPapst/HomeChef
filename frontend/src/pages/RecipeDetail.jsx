@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Clock, Fire, ArrowLeft } from "@phosphor-icons/react";
+import { Clock, Fire, ArrowLeft, PencilSimple } from "@phosphor-icons/react";
 import { PortionStepper } from "@/components/PortionStepper";
 import IngredientEntry from "../components/IngredientEntry";
 import CookingStep from "@/components/CookingStep";
@@ -109,7 +109,17 @@ export default function RecipeDetail() {
             >
               <ArrowLeft size={28} weight="bold" />
               <span className="sr-only">Zurück</span> {/* Wichtig für Screenreader! */}
-            </Button>
+          </Button>
+          
+          <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={() => navigate(`/recipes/${id}/edit`)}
+              className="h-12 w-12 rounded-full bg-white p-0 absolute top-4 right-4 z-50"
+            >
+              <PencilSimple size={28} weight="bold" />
+              <span className="sr-only">Zurück</span> {/* Wichtig für Screenreader! */}
+          </Button>
     </div>
   )
 }

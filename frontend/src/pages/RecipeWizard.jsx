@@ -94,7 +94,8 @@ export default function CreateRecipeWizard({ initialData = null }) {
   };
 
   const prevStep = () => {
-    if (step > 1) setStep((s) => s - 1);
+    if (initialData && step === 2) navigate(-1);
+    else if (step > 1) setStep((s) => s - 1);
     else navigate(-1);
   };
 
@@ -160,20 +161,27 @@ export default function CreateRecipeWizard({ initialData = null }) {
     }
   };
 
+  const calculateStep = () => {
+    if(!initialData){
+      return `Schritt ${step} von ${4}` 
+    }
+    else return `Schritt ${step-1} von ${3}`
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       
       {/* --- HEADER --- */}
       <div className="sticky top-0 z-10 bg-white p-4 flex flex-col gap-2 border-b border-border-default">
         <div className="flex justify-between items-end">
-          <h1 className="text-sm font-medium tracking-tight">Schritt {step} von 4</h1>
+          <h1 className="text-sm font-medium tracking-tight">{calculateStep()}</h1>
           <span className="text-sm text-text-subinfo font-medium">{getStepName()}</span>
         </div>
         {/* Progress Bar (Design wie Screenshot 1) */}
         <div className="h-2 w-full bg-border-default rounded-full overflow-hidden">
           <div 
             className="h-full bg-brand-teal rounded-full transition-all duration-500 ease-out" 
-            style={{ width: `${(step / 4) * 100}%` }} 
+            style={{ width: initialData ? `${((step-1) / 3) * 100}%` :  `${(step / 4) * 100}%`}} 
           />
         </div>
       </div>
