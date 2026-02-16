@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { MealPlannerService } from './meal-planner.service';
 import { SaveWeekDto } from './dto/save-week.dto';
 
-@Controller('meal-planner')
+@Controller('meal-plans')
 export class MealPlannerController {
   constructor(private readonly mealPlannerService: MealPlannerService) {}
 
@@ -15,8 +15,12 @@ export class MealPlannerController {
     return this.mealPlannerService.getPlan(startDate, endDate);
   }
 
-  // Speichern: POST /meal-planner
-  @Post()
+  @Get('all')
+  async getAll() {
+    return this.mealPlannerService.getAllUpcomingPlans();
+  }
+
+  @Post('week')
   async saveWeek(@Body() saveWeekDto: SaveWeekDto) {
     return this.mealPlannerService.saveWeek(saveWeekDto);
   }

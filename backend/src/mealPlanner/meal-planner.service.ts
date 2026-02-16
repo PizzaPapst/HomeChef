@@ -8,15 +8,22 @@ export class MealPlannerService {
 
   // 1. Plan abrufen (GET)
   async getPlan(startDate: string, endDate: string) {
+    // Auch hier sicherstellen, dass wir den ganzen Tag erwischen
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
     return this.prisma.mealPlan.findMany({
       where: {
         date: {
-          gte: new Date(startDate), // Größer gleich Start
-          lte: new Date(endDate),   // Kleiner gleich Ende
+          gte: start,
+          lte: end,
         },
       },
       include: {
-        recipe: true, // Damit wir Titel & Bild im Frontend haben
+        recipe: true,
       },
       orderBy: {
         date: 'asc',
@@ -26,27 +33,59 @@ export class MealPlannerService {
 
   // 2. Plan speichern (POST)
   async saveWeek(dto: SaveWeekDto) {
-    // Prisma Transaction: Alles oder nichts
+    
+    // A. Datums-Grenzen sauber berechnen
+    const start = new Date(dto.startDate);
+    start.setHours(0, 0, 0, 0); // Startet am Anfang des ersten Tages
+
+    const end = new Date(dto.endDate);
+    end.setHours(23, 59, 59, 999); // Endet am Ende des letzten Tages!
+
+    // B. Daten bereinigen (Uhrzeit immer auf 00:00 setzen)
+    // Das verhindert Chaos mit Zeitzonen oder krummen Uhrzeiten
+    const cleanDays = dto.days.map((day) => {
+      const d = new Date(day.date);
+      d.setHours(0, 0, 0, 0); // Uhrzeit entfernen -> 00:00:00
+      return {
+        date: d,
+        recipeId: day.recipeId,
+      };
+    });
+
     return this.prisma.$transaction([
       
-      // Schritt A: Erstmal den Zeitraum "säubern". 
-      // Das löscht alte Einträge und auch Einträge an Tagen, die im neuen Plan leer sind.
+      // Schritt A: Den Zeitraum KOMPLETT säubern
       this.prisma.mealPlan.deleteMany({
         where: {
           date: {
-            gte: new Date(dto.startDate),
-            lte: new Date(dto.endDate),
+            gte: start,
+            lte: end, // Jetzt wird auch ein Eintrag um 18:00 Uhr gelöscht
           },
         },
       }),
 
-      // Schritt B: Die neuen Tage eintragen
+      // Schritt B: Die neuen, sauberen Tage eintragen
       this.prisma.mealPlan.createMany({
-        data: dto.days.map((day) => ({
-          date: new Date(day.date),
-          recipeId: day.recipeId,
-        })),
+        data: cleanDays,
+        skipDuplicates: true, // Sicherheitsnetz: Falls doppelte Tage im Array sind, ignoriere den zweiten
       }),
     ]);
+  }
+
+  // Hol einfach alles, was ab heute geplant ist, sortiert nach Datum
+  async getAllUpcomingPlans() {
+    return this.prisma.mealPlan.findMany({
+      where: {
+        date: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)), // Ab heute 00:00 Uhr
+        },
+      },
+      include: {
+        recipe: true,
+      },
+      orderBy: {
+        date: 'asc',
+      },
+    });
   }
 }
