@@ -5,6 +5,7 @@ import RecipeDetail from "./pages/RecipeDetail"; // Importieren
 import RecipeWizard from "./pages/RecipeWizard"; // Importieren
 import { MobileNavigation } from "./components/MobileNavigation";
 import EditRecipePage from "./pages/EditRecipePage";
+import WeeklyPlanWizard from "./pages/WeeklyPlanWizard";
 
 function App() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function App() {
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/recipe/create" element={<RecipeWizard />} />
         <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
+        <Route path="/plan/create" element={<WeeklyPlanWizard />} />
       </Routes>
 
       {/* Bedingtes Rendern: Nur anzeigen wenn true */}

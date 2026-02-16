@@ -23,6 +23,7 @@ model Recipe {
   // Relationen
   ingredients  Ingredient[]
   instructions Instruction[]
+  mealPlans    MealPlan[]
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -46,3 +47,19 @@ model Instruction {
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId Int
 }
+
+model MealPlan {
+  id        Int      @id @default(autoincrement())
+  date      DateTime // Das Wichtigste: Wann wird gekocht?
+  
+  // Verknüpfung zum Rezept
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId  Int
+
+  // Optional: Wenn du später User hast
+  // userId Int
+  
+  // Damit man an einem Tag nicht aus Versehen 2 Gerichte speichert (optional)
+  @@unique([date]) 
+}
+

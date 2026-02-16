@@ -54,7 +54,7 @@ export default function Cookbook() {
       
       <Button
         size="icon"
-        className="fixed bottom-24 right-6 h-[80px] w-[80px] rounded-full shadow-xl z-50 transition-transform active:scale-95 shadow-fab-shadow text-text-inverted bg-brand-orange"
+        className="fixed bottom-24 right-4 h-[80px] w-[80px] rounded-full shadow-xl z-50 transition-transform active:scale-95 shadow-fab-shadow text-text-inverted bg-brand-orange"
         onClick={() => navigate("/recipe/create")}
       >
         <Plus size={28} weight="bold"/>

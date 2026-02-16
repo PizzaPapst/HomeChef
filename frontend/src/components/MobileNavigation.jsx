@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Book, CalendarBlank } from "@phosphor-icons/react";
 
+
 // 1. Wir lagern die komplexe Logik in eine eigene Komponente aus
 function NavItem({ to, icon: Icon, label }) {
   return (
