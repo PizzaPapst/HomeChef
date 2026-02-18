@@ -37,7 +37,7 @@ export class RecipesService {
 
   findAll() {
     return this.prisma.recipe.findMany({
-      include: { ingredients: false, instructions: false } // Lade auch die Details
+      include: { ingredients: false, instructions: false }, // Lade auch die Details
     });
   }
 
@@ -63,42 +63,47 @@ export class RecipesService {
   }
 
   async update(id: number, updateRecipeDto: UpdateRecipeDto) {
-  return this.prisma.recipe.update({
-    where: { id },
-    data: {
-      title: updateRecipeDto.title,
-      sourceUrl: updateRecipeDto.sourceUrl,
-      imageUrl: updateRecipeDto.imageUrl,
-      servings: updateRecipeDto.servings,
-      prepTime: updateRecipeDto.prepTime,
+    return this.prisma.recipe.update({
+      where: { id },
+      data: {
+        title: updateRecipeDto.title,
+        sourceUrl: updateRecipeDto.sourceUrl,
+        imageUrl: updateRecipeDto.imageUrl,
+        servings: updateRecipeDto.servings,
+        prepTime: updateRecipeDto.prepTime,
 
-      // --- ZUTATEN ---
-      // Prüfung: Sind Zutaten im Update enthalten?
-      ingredients: updateRecipeDto.ingredients ? {
-        deleteMany: {}, // 1. Alles löschen
-        create: updateRecipeDto.ingredients.map(ing => ({ // 2. Neu anlegen
-          name: ing.name,
-          amount: ing.amount,
-          unit: ing.unit,
-        })),
-      } : undefined, // Wenn keine Zutaten im DTO -> Prisma ignoriert das Feld (ändert nichts)
+        // --- ZUTATEN ---
+        // Prüfung: Sind Zutaten im Update enthalten?
+        ingredients: updateRecipeDto.ingredients
+          ? {
+              deleteMany: {}, // 1. Alles löschen
+              create: updateRecipeDto.ingredients.map((ing) => ({
+                // 2. Neu anlegen
+                name: ing.name,
+                amount: ing.amount,
+                unit: ing.unit,
+              })),
+            }
+          : undefined, // Wenn keine Zutaten im DTO -> Prisma ignoriert das Feld (ändert nichts)
 
-      // --- ANLEITUNGEN ---
-      // Gleiche Logik hier:
-      instructions: updateRecipeDto.instructions ? {
-        deleteMany: {},
-        create: updateRecipeDto.instructions.map(instr => ({
-          step: instr.step,
-          text: instr.text,
-        })),
-      } : undefined,
-    },
-  });
-}
+        // --- ANLEITUNGEN ---
+        // Gleiche Logik hier:
+        instructions: updateRecipeDto.instructions
+          ? {
+              deleteMany: {},
+              create: updateRecipeDto.instructions.map((instr) => ({
+                step: instr.step,
+                text: instr.text,
+              })),
+            }
+          : undefined,
+      },
+    });
+  }
 
- remove(id: number) {
-  return this.prisma.recipe.delete({
-    where: { id },
-  });
-}
+  remove(id: number) {
+    return this.prisma.recipe.delete({
+      where: { id },
+    });
+  }
 }

@@ -8,23 +8,21 @@ function NavItem({ to, icon: Icon, label }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex flex-col items-center gap-1 transition-all w-full ${
-          isActive ? "text-brand-teal" : "text-text-default"
+        `flex flex-col items-center gap-1 transition-all w-full ${isActive ? "text-brand-teal" : "text-text-subinfo"
         }`
       }
     >
       {({ isActive }) => (
         <>
           <div
-            className={`px-4 py-1 rounded-full ${
-              isActive ? "bg-teal-light" : "bg-transparent"
-            }`}
+            className={`px-4 py-1 rounded-full ${isActive ? "bg-teal-light" : "bg-transparent"
+              }`}
           >
             {/* Wir rendern das übergebene Icon dynamisch */}
             <Icon
               size={24}
               weight={isActive ? "fill" : "regular"}
-              className={isActive ? "text-brand-teal" : "text-text-default"}
+              className={isActive ? "text-brand-teal" : "text-text-subinfo"}
             />
           </div>
           <span className={`text-xs ${isActive ? "font-semibold" : "font-medium"}`}>{label}</span>
@@ -37,18 +35,18 @@ function NavItem({ to, icon: Icon, label }) {
 // 2. Deine eigentliche Navigation ist jetzt extrem sauber:
 export function MobileNavigation() {
   return (
-    <nav className="fixed bottom-0 z-50 w-full bg-white border-t-2 border-border-default px-6 py-4 flex justify-between items-center">
-      
-      <NavItem 
-        to="/" 
-        icon={Book} 
-        label="Kochbuch" 
+    <nav className="fixed bottom-0 z-50 w-full bg-white border-t border-border-default px-6 py-4 flex justify-between items-center">
+
+      <NavItem
+        to="/"
+        icon={Book}
+        label="Kochbuch"
       />
 
-      <NavItem 
-        to="/plan" 
-        icon={CalendarBlank} 
-        label="Wochenplan" 
+      <NavItem
+        to="/plan"
+        icon={CalendarBlank}
+        label="Wochenplan"
       />
 
     </nav>

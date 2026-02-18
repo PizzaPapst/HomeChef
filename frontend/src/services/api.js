@@ -8,7 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export async function fetchAllRecipes() {
   try {
     const response = await fetch(`${API_URL}/recipes`);
-    
+
     if (!response.ok) {
       throw new Error('Fehler beim Laden der Rezepte');
     }
@@ -77,4 +77,17 @@ export async function getAllMealPlans() {
   const response = await fetch(`${API_URL}/meal-plans/all`);
   if (!response.ok) throw new Error("Fehler beim Laden");
   return response.json();
+}
+
+export async function deleteRecipe(id) {
+  const response = await fetch(`${API_URL}/recipes/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Fehler beim Löschen des Rezepts");
+  }
+
+  return true;
 }

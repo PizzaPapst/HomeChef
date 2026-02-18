@@ -1,4 +1,5 @@
-import { Routes, Route, useLocation } from "react-router-dom"; // useLocation importieren
+import { Routes, Route, useLocation } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import Cookbook from "./pages/Cookbook";
 import WeeklyPlan from "./pages/WeeklyPlan";
 import RecipeDetail from "./pages/RecipeDetail"; // Importieren
@@ -20,11 +21,12 @@ function App() {
   return (
     // pb-24 (Padding unten) brauchen wir nur, wenn die Nav da ist, sonst stört der Platz
     <div className={`bg-custom-bg min-h-screen font-sans flex flex-col`}>
-      
+      <ScrollToTop />
+
       <Routes>
         <Route path="/" element={<Cookbook />} />
         <Route path="/plan" element={<WeeklyPlan />} />
-        
+
         {/* Der Doppelpunkt :id ist ein Platzhalter für irgendeine Nummer */}
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/recipe/create" element={<RecipeWizard />} />
@@ -34,7 +36,7 @@ function App() {
 
       {/* Bedingtes Rendern: Nur anzeigen wenn true */}
       {shouldShowNav && <MobileNavigation />}
-      
+
     </div>
   )
 }

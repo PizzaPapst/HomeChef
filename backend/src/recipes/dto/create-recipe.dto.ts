@@ -1,5 +1,11 @@
 // src/recipes/dto/create-recipe.dto.ts
-import { IsString, IsNumber, IsArray, IsOptional, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 // Hilfs-Klasse für Zutaten

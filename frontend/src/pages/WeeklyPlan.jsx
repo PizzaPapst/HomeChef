@@ -34,26 +34,26 @@ export default function WeeklyPlan() {
 
   return (
     // 'pb-32' sorgt dafür, dass die letzte Karte nicht hinter dem Button verschwindet
-    <div className="px-4 pt-6 min-h-screen bg-white pb-32"> 
-      
+    <div className="px-4 pt-6 min-h-screen bg-white pb-[102px] flex flex-col gap-4">
+
       {/* mb-8 für etwas Abstand zur Liste */}
-      <h1 className="text-2xl font-bold mb-8">Wochenplan</h1> 
+      <h1 className="text-2xl font-bold">Wochenplan</h1>
 
       {/* --- NEU: Listen-Bereich Start --- */}
       <div className="flex flex-col gap-8">
-        
+
         {isLoading && <p className="text-gray-400 text-sm">Lade Pläne...</p>}
-        
+
         {!isLoading && plans.length === 0 && (
-           <p className="text-gray-400 text-sm">Noch nichts geplant.</p>
+          <p className="text-gray-400 text-sm">Noch nichts geplant.</p>
         )}
 
         {plans.map((plan) => {
           const date = new Date(plan.date);
-          
+
           return (
             <div key={plan.id} className="flex flex-col gap-3">
-              
+
               {/* Header: Tag & Datum */}
               <div className="flex items-center justify-between">
                 <div className="flex items-baseline gap-2">
@@ -72,9 +72,9 @@ export default function WeeklyPlan() {
 
               {/* Die Karte */}
               <div className="h-full">
-                 <RecipeCard recipe={plan.recipe} />
+                <RecipeCard recipe={plan.recipe} />
               </div>
-              
+
             </div>
           );
         })}
@@ -83,12 +83,13 @@ export default function WeeklyPlan() {
 
       {/* Dein Original Button */}
       <Button
-              size="icon"
-              className="fixed bottom-24 right-4 h-[80px] w-[80px] rounded-full shadow-xl z-50 transition-transform active:scale-95 shadow-fab-shadow text-text-inverted bg-brand-orange"
-              onClick={() => navigate("/plan/create")}
+        variant="fab"
+        size="icon"
+        className="fixed bottom-24 right-4 h-[80px] w-[80px] rounded-full z-50 text-text-inverted bg-brand-orange"
+        onClick={() => navigate("/plan/create")}
       >
-              <Plus size={28} weight="bold"/>
-              <span className="sr-only">Neues Rezept erstellen</span>
+        <Plus size={28} weight="bold" />
+        <span className="sr-only">Neues Rezept erstellen</span>
       </Button>
     </div>
   )

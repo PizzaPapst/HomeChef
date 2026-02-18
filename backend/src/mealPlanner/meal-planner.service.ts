@@ -33,7 +33,6 @@ export class MealPlannerService {
 
   // 2. Plan speichern (POST)
   async saveWeek(dto: SaveWeekDto) {
-    
     // A. Datums-Grenzen sauber berechnen
     const start = new Date(dto.startDate);
     start.setHours(0, 0, 0, 0); // Startet am Anfang des ersten Tages
@@ -53,7 +52,6 @@ export class MealPlannerService {
     });
 
     return this.prisma.$transaction([
-      
       // Schritt A: Den Zeitraum KOMPLETT säubern
       this.prisma.mealPlan.deleteMany({
         where: {

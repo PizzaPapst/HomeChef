@@ -1,4 +1,5 @@
 import { RecipeCard } from "../components/RecipeCard";
+import { TextLink } from "../components/TextLink";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "@phosphor-icons/react";
@@ -13,17 +14,17 @@ export default function Cookbook() {
 
   useEffect(() => {
     if (!apiUrl) {
-        console.error("API URL fehlt in der .env Datei!");
-        return;
+      console.error("API URL fehlt in der .env Datei!");
+      return;
     }
 
-    fetch(`${apiUrl}/recipes`) 
+    fetch(`${apiUrl}/recipes`)
       .then(response => {
         if (!response.ok) {
-            throw new Error('Netzwerkantwort war nicht ok');
+          throw new Error('Netzwerkantwort war nicht ok');
         }
-        
-        return response.json(); 
+
+        return response.json();
       })
       .then(data => {
         // HIER hast du erst die echten Daten
@@ -33,31 +34,33 @@ export default function Cookbook() {
       .catch(error => {
         console.error('Fehler beim Laden:', error);
       });
-    }, []);
+  }, []);
 
   return (
     <div className="flex flex-1 flex-col gap-1">
 
       <div className="bg-custom-bg flex flex-col flex-1 gap-8 px-4 pt-6 pb-[102px]">
-        <div className="flex justify-between items-center gap-8">
-          <h1 className="text-2xl font-bold ">Was möchtest du heute essen?</h1>
-          <Button></Button>
-        </div>
-        
+
+        <h1 className="text-2xl font-bold ">Was möchtest du heute essen?</h1>
+
         <div className="flex flex-col gap-4">
-          <h2 className="font-semibold text-lg">Rezeptideen</h2>
-            {recipes.length && recipes.map((recipe)=>{
-              return <RecipeCard key={recipe.id} recipe={recipe}/>
-            })}
+          <div className="flex justify-between items-center">
+            <h2 className="font-semibold text-lg">Rezeptideen</h2>
+            <TextLink to="#">Alle anzeigen</TextLink>
+          </div>
+          {recipes.length && recipes.map((recipe) => {
+            return <RecipeCard key={recipe.id} recipe={recipe} />
+          })}
         </div>
       </div>
-      
+
       <Button
+        variant="fab"
         size="icon"
-        className="fixed bottom-24 right-4 h-[80px] w-[80px] rounded-full shadow-xl z-50 transition-transform active:scale-95 shadow-fab-shadow text-text-inverted bg-brand-orange"
+        className="fixed bottom-24 right-4 h-[80px] w-[80px] rounded-full z-50 text-text-inverted bg-brand-orange"
         onClick={() => navigate("/recipe/create")}
       >
-        <Plus size={28} weight="bold"/>
+        <Plus size={28} weight="bold" />
         <span className="sr-only">Neues Rezept erstellen</span>
       </Button>
     </div>
