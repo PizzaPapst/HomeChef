@@ -60,7 +60,7 @@ export default function Cookbook() {
         className="fixed bottom-24 right-4 h-[80px] w-[80px] rounded-full z-50 text-text-inverted bg-brand-orange"
         onClick={() => navigate("/recipe/create")}
       >
-        <Plus size={28} weight="bold" />
+        <Plus size={24} weight="bold" />
         <span className="sr-only">Neues Rezept erstellen</span>
       </Button>
     </div>
