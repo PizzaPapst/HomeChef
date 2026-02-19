@@ -60,9 +60,8 @@ services:
       dockerfile: Dockerfile
       # Hier übergeben wir die Variable an den Build-Prozess
       args:
-        # ACHTUNG: Hier muss die ECHTE IP deines Homeservers rein!
-        # "localhost" funktioniert hier NICHT, weil das Handy nicht "localhost" ist.
-        - VITE_API_URL=${VITE_API_URL} 
+        # Wir setzen hier fest auf /api, damit der Reverse Proxy es routen kann
+        - VITE_API_URL=/api 
     container_name: homechef_frontend
     ports:
       - "81:80" # Frontend erreichbar unter Port 80
