@@ -8,7 +8,7 @@ import {
   CaretRight,
   Plus
 } from "@phosphor-icons/react";
-import { Badge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/Badge.jsx";
 
 /**
  * RecipeCard Component
