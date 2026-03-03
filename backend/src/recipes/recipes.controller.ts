@@ -65,7 +65,7 @@ export class RecipesController {
 
   @Get(':id/image')
   async getImage(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    const recipe = await this.recipesService.findOne(id);
+    const recipe = await this.recipesService.findOne(id) as any;
     if (!recipe.imageData) {
       throw new NotFoundException('Kein Bild für dieses Rezept gefunden');
     }

@@ -13,7 +13,7 @@ export class CategoriesService implements OnModuleInit {
         const categories = ['Schnell', 'Kalorienarm', 'High Protein', 'Vegetarisch'];
         for (const name of categories) {
             try {
-                await this.prisma.category.upsert({
+                await (this.prisma as any).category.upsert({
                     where: { name },
                     update: {},
                     create: { name },
@@ -25,11 +25,11 @@ export class CategoriesService implements OnModuleInit {
     }
 
     findAll() {
-        return this.prisma.category.findMany();
+        return (this.prisma as any).category.findMany();
     }
 
     async findOne(id: number) {
-        return this.prisma.category.findUnique({
+        return (this.prisma as any).category.findUnique({
             where: { id },
             include: { recipes: true },
         });

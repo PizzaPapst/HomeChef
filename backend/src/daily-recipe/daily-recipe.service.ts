@@ -10,7 +10,7 @@ export class DailyRecipeService {
         today.setHours(0, 0, 0, 0);
 
         // Check if we already have one for today
-        let daily = await this.prisma.dailyRecipe.findUnique({
+        let daily = await (this.prisma as any).dailyRecipe.findUnique({
             where: { date: today },
             include: { recipe: true },
         });
@@ -27,7 +27,7 @@ export class DailyRecipeService {
             });
 
             if (randomRecipe.length > 0) {
-                daily = await this.prisma.dailyRecipe.upsert({
+                daily = await (this.prisma as any).dailyRecipe.upsert({
                     where: { date: today },
                     update: { recipeId: randomRecipe[0].id },
                     create: {

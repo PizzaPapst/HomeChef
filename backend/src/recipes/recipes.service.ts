@@ -31,7 +31,7 @@ export class RecipesService {
       }
     }
 
-    return this.prisma.recipe.findMany({
+    return (this.prisma as any).recipe.findMany({
       where,
       include: {
         ingredients: true,
@@ -50,8 +50,7 @@ export class RecipesService {
   }
 
   async create(data: CreateRecipeDto) {
-    // Nimmt das fertige DTO und schreibt es in die DB
-    return this.prisma.recipe.create({
+    const recipe = await (this.prisma as any).recipe.create({
       data: {
         title: data.title,
         description: data.description || '',
@@ -69,7 +68,7 @@ export class RecipesService {
           create: data.instructions, // Passt auch direkt
         },
         calories: calculateTotalCalories(data.ingredients),
-      },
+      } as any,
     });
 
     await this.syncCategories(recipe.id);
@@ -79,7 +78,7 @@ export class RecipesService {
 
   async findOne(id: number) {
     console.log(`[RecipesService] Searching for recipe with ID: ${id} (Type: ${typeof id})`);
-    const recipe = await this.prisma.recipe.findUnique({
+    const recipe = await (this.prisma as any).recipe.findUnique({
       where: { id: id },
       include: {
         ingredients: true,
@@ -109,7 +108,7 @@ export class RecipesService {
 
     if (!recipe) return;
 
-    const targetCategories = [];
+    const targetCategories: string[] = [];
 
     // 1. "Schnell" logic
     if (recipe.prepTime && recipe.prepTime <= 30) {
@@ -122,7 +121,7 @@ export class RecipesService {
     // ...
 
     // Update relations
-    await this.prisma.recipe.update({
+    await (this.prisma as any).recipe.update({
       where: { id },
       data: {
         categories: {
@@ -137,7 +136,7 @@ export class RecipesService {
   }
 
   async update(id: number, updateRecipeDto: UpdateRecipeDto) {
-    return this.prisma.recipe.update({
+    await (this.prisma as any).recipe.update({
       where: { id },
       data: {
         title: updateRecipeDto.title,
@@ -176,7 +175,7 @@ export class RecipesService {
         calories: updateRecipeDto.ingredients
           ? calculateTotalCalories(updateRecipeDto.ingredients)
           : undefined,
-      },
+      } as any,
     });
 
     await this.syncCategories(id);
@@ -190,12 +189,12 @@ export class RecipesService {
   }
 
   async saveImage(id: number, buffer: Buffer, mimetype: string) {
-    return this.prisma.recipe.update({
+    return (this.prisma as any).recipe.update({
       where: { id },
       data: {
         imageData: buffer,
         imageType: mimetype,
-      },
+      } as any,
     });
   }
 }
