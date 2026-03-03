@@ -15,25 +15,45 @@ datasource db {
 model Recipe {
   id           Int      @id @default(autoincrement())
   title        String
+  description  String?
   sourceUrl    String   @unique
-  imageUrl     String?
+  imageUrl     String?  // Externe URL (bleibt als Fallback)
+  imageData    Bytes?   // Binäre Bilddaten (BLOB)
+  imageType    String?  // Content-Type (z.B. image/jpeg)
   servings     Int      @default(4)
   prepTime     Int?     // in Minuten
+  calories     Int?     // Kalorien pro Rezept
   
   // Relationen
   ingredients  Ingredient[]
   instructions Instruction[]
   mealPlans    MealPlan[]
+  categories   Category[]
+  dailyRecipe  DailyRecipe?
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
+model Category {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  recipes Recipe[]
+}
+
+model DailyRecipe {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique @default(now())
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipeId  Int      @unique
+}
+
 model Ingredient {
-  id       Int    @id @default(autoincrement())
-  name     String
-  amount   Float? 
-  unit     String?
+  id             Int     @id @default(autoincrement())
+  name           String
+  normalizedName String?
+  amount         Float?
+  unit           String?
   
   recipe   Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   recipeId Int
