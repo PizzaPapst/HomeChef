@@ -41,7 +41,7 @@ export class RecipesService {
       orderBy: {
         createdAt: 'desc',
       },
-    });
+    } as any);
   }
 
   async analyzeRecipe(url: string) {
@@ -89,7 +89,7 @@ export class RecipesService {
           },
         },
       },
-    });
+    } as any);
 
     if (!recipe) {
       console.warn(`[RecipesService] Recipe with ID ${id} NOT found in database.`);
@@ -101,10 +101,10 @@ export class RecipesService {
   }
 
   async syncCategories(id: number) {
-    const recipe = await this.prisma.recipe.findUnique({
+    const recipe = await (this.prisma as any).recipe.findUnique({
       where: { id },
       include: { categories: true },
-    });
+    } as any);
 
     if (!recipe) return;
 

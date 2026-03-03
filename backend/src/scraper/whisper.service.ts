@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as childProcess from 'child_process';
+// @ts-ignore
 import ffmpegPath from 'ffmpeg-static';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class WhisperService {
             this.logger.log('🔄 Lade Whisper-Modell (onnx-community/whisper-base)...');
             this.logger.log('   Erster Start: Download ~150MB, danach gecacht.');
 
+            // @ts-ignore
             const { pipeline, env } = await import('@huggingface/transformers');
 
             // Cache-Pfad setzen (für Docker-Volume)

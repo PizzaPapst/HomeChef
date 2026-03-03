@@ -2,7 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+// @ts-ignore
 import youtubedl from 'youtube-dl-exec';
+// @ts-ignore
 import ffmpegPath from 'ffmpeg-static';
 import { WhisperService } from './whisper.service';
 

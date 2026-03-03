@@ -58,7 +58,7 @@ export class RecipesController {
   @UseInterceptors(FileInterceptor('image'))
   async uploadImage(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
   ) {
     return this.recipesService.saveImage(id, file.buffer, file.mimetype);
   }
