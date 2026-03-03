@@ -22,10 +22,10 @@ const buttonVariants = cva(
         fab: "shadow-fab-shadow transition-transform active:scale-95",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
+        default: "h-14 px-4 py-2",
+        sm: "h-14 rounded-md px-3 text-xs",
+        lg: "h-14 rounded-md px-8",
+        icon: "h-14 w-14",
       },
     },
     defaultVariants: {

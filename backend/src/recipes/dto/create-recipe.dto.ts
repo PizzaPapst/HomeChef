@@ -14,10 +14,16 @@ export class IngredientDto {
   name: string;
 
   @IsNumber()
-  amount: number;
+  @IsOptional()
+  amount?: number;
 
   @IsString()
-  unit: string;
+  @IsOptional()
+  unit?: string;
+
+  @IsString()
+  @IsOptional()
+  normalizedName?: string;
 }
 
 // Hilfs-Klasse für Schritte
@@ -33,6 +39,10 @@ export class InstructionDto {
 export class CreateRecipeDto {
   @IsString()
   title: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 
   @IsString()
   sourceUrl: string;

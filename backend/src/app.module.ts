@@ -6,10 +6,19 @@ import { RecipesModule } from './recipes/recipes.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { AiModule } from './ai/ai.module';
 import { MealPlannerModule } from './mealPlanner/meal-planner.module';
+import { CategoriesModule } from './categories/categories.module';
+import { DailyRecipeModule } from './daily-recipe/daily-recipe.module';
 
 @Module({
-  imports: [RecipesModule, ScraperModule, AiModule, MealPlannerModule],
+  imports: [
+    RecipesModule,
+    ScraperModule,
+    AiModule,
+    MealPlannerModule,
+    CategoriesModule,
+    DailyRecipeModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

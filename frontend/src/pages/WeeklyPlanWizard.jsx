@@ -235,7 +235,7 @@ export default function WeeklyPlanWizard() {
                           variant="ghost"
                           size="icon"
                           onClick={() => rerollDay(dateKey)}
-                          className="text-gray-400 hover:text-brand-teal h-10 w-10"
+                          className="text-gray-400 hover:text-brand-teal h-14 w-14"
                           title="Zufälliges Rezept"
                         >
                           <ArrowsClockwise size={20} weight="bold" />
@@ -243,7 +243,7 @@ export default function WeeklyPlanWizard() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-gray-400 hover:text-brand-teal h-10 w-10"
+                          className="text-gray-400 hover:text-brand-teal h-14 w-14"
                         >
                           <DotsThreeVertical size={24} weight="bold" />
                         </Button>

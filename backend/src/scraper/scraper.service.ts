@@ -7,6 +7,8 @@ import { AiService } from '../ai/ai.service';
 // --- NEU: Import für den Parser ---
 import { parseIngredient } from 'parse-ingredient';
 import { CreateRecipeDto } from '../recipes/dto/create-recipe.dto';
+import { normalizeIngredientName } from '../recipes/ingredient-utils';
+import { SocialMediaService } from './social-media.service';
 
 // Interface für das Rückgabe-Format unserer Fetcher
 interface FetchResult {
@@ -18,11 +20,19 @@ interface FetchResult {
 export class ScraperService {
   private readonly logger = new Logger(ScraperService.name);
 
-  constructor(private aiService: AiService) {
+  constructor(
+    private aiService: AiService,
+    private socialMediaService: SocialMediaService,
+  ) {
     puppeteer.use(StealthPlugin());
   }
 
   async scrapeRecipe(url: string): Promise<CreateRecipeDto> {
+    // --- STRATEGIE 0: SOCIAL MEDIA ---
+    if (this.isSocialMediaUrl(url)) {
+      return this.scrapeSocialMedia(url);
+    }
+
     let result: FetchResult = { data: null, htmlText: '' };
 
     try {
@@ -58,7 +68,28 @@ export class ScraperService {
       if (!result.data.name) {
         result.data.name = await this.fetchTitleFromMetadata(url);
       }
-      return this.mapSchemaToRecipe(result.data, url);
+
+      const recipe = this.mapSchemaToRecipe(result.data, url);
+
+      // NEU: Auch bei JSON-LD die KI fragen, um die Zutaten perfekt zu kategorisieren
+      try {
+        const ingredientNames = recipe.ingredients.map(i => i.name);
+        const aiIngredients = await this.aiService.categorizeIngredients(ingredientNames);
+
+        if (aiIngredients) {
+          recipe.ingredients = recipe.ingredients.map(ing => {
+            const aiBase = aiIngredients.find((ai: any) => ai.name === ing.name)?.base_ingredient;
+            return {
+              ...ing,
+              normalizedName: (aiBase || normalizeIngredientName(ing.name)).toLowerCase().trim()
+            };
+          });
+        }
+      } catch (e) {
+        this.logger.error('KI-Kategorisierung fehlgeschlagen, nutze Fallback-Normalisierung.', e);
+      }
+
+      return recipe;
     }
 
     // 2. Kein JSON-LD? Dann fragen wir die KI mit dem Text
@@ -83,6 +114,47 @@ export class ScraperService {
   }
 
   // --- FETCHER METHODEN ---
+
+  private isSocialMediaUrl(url: string): boolean {
+    const socialPlatforms = ['youtube.com', 'youtu.be', 'tiktok.com', 'instagram.com'];
+    return socialPlatforms.some(platform => url.includes(platform));
+  }
+
+  private async scrapeSocialMedia(url: string): Promise<CreateRecipeDto> {
+    this.logger.log(`Social Media URL erkannt: ${url}`);
+    const mediaInfo = await this.socialMediaService.downloadAndProcess(url);
+
+    this.logger.log(`--- KI-Analyse gestartet ---`);
+    this.logger.log(`  Titel: "${mediaInfo.title}"`);
+    this.logger.log(`  Beschreibung (${mediaInfo.description.length} Zeichen)`);
+    this.logger.log(`  Transkript: ${mediaInfo.transcript ? `JA (${mediaInfo.transcript.length} Zeichen) 🎙️` : 'NEIN (Beschreibung ausreichend) ✅'}`);
+
+    let aiData: any = null;
+
+    try {
+      aiData = await this.aiService.parseRecipeFromSocialMedia(
+        { title: mediaInfo.title, description: mediaInfo.description },
+        mediaInfo.transcript,
+      );
+      this.logger.log(`--- KI-Antwort erhalten ---`);
+      this.logger.log(JSON.stringify(aiData, null, 2));
+    } catch (aiError: any) {
+      this.logger.error(`KI-Analyse fehlgeschlagen: ${aiError.message}`);
+    }
+
+    if (aiData && aiData.name) {
+      const recipe = this.mapSchemaToRecipe(aiData, url);
+      if (mediaInfo.imageUrl && !recipe.imageUrl) {
+        recipe.imageUrl = mediaInfo.imageUrl;
+      }
+      return recipe;
+    }
+
+    throw new HttpException(
+      'Rezept konnte nicht aus Social Media extrahiert werden.',
+      HttpStatus.BAD_REQUEST,
+    );
+  }
 
   private async fetchWithAxios(url: string): Promise<FetchResult> {
     const { data } = await axios.get(url, {
@@ -129,7 +201,7 @@ export class ScraperService {
       try {
         const btn = await page.$('#uc-btn-accept-banner'); // Rewe Selector
         if (btn) await btn.click();
-      } catch (e) {}
+      } catch (e) { }
 
       // Scrollen
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
@@ -185,7 +257,7 @@ export class ScraperService {
           foundData = schema;
           return false;
         }
-      } catch (e) {}
+      } catch (e) { }
     });
     return foundData;
   }
@@ -203,7 +275,15 @@ export class ScraperService {
   private mapSchemaToRecipe(data: any, originalUrl: string): CreateRecipeDto {
     // --- 1. Zutaten bereinigen & parsen ---
     const ingredients = (data.recipeIngredient || []).map((ing: any) => {
-      // Fall A: Es ist ein String
+      // Fall A1: Es ist ein AI-Objekt mit base_ingredient
+      if (typeof ing === 'object' && ing.base_ingredient) {
+        return {
+          name: ing.name,
+          base_ingredient: ing.base_ingredient,
+        };
+      }
+
+      // Fall A2: Es ist ein String
       if (typeof ing === 'string') {
         try {
           // WICHTIG: Komma zu Punkt wandeln
@@ -271,14 +351,13 @@ export class ScraperService {
         }
 
         // Fallback
-        return { name: ing.replace(/\s+/g, ' ').trim(), amount: 0, unit: '' };
+        return { name: ing.replace(/\s+/g, ' ').trim(), base_ingredient: '' };
       }
 
-      // Fall B: Objekt
+      // Fall B: Standard-Objekt
       return {
         name: ing.name || '',
-        amount: ing.amount || 0,
-        unit: ing.unit || '',
+        base_ingredient: ing.base_ingredient || '',
       };
     });
 
@@ -298,6 +377,7 @@ export class ScraperService {
     // --- 4. Return (Unverändert) ---
     return {
       title: data.name || 'Unbekanntes Rezept',
+      description: data.description || '',
       sourceUrl: originalUrl,
       imageUrl: this.extractImageUrl(data.image) || '', // Leere Strings statt undefined
       servings: parseInt(data.recipeYield) || 4,
@@ -306,6 +386,7 @@ export class ScraperService {
       // Zutaten Array mappen
       ingredients: ingredients.map((ing) => ({
         name: ing.name || '',
+        normalizedName: (ing.base_ingredient || normalizeIngredientName(ing.name)).toLowerCase().trim(),
         amount: Number(ing.amount) || 0,
         unit: ing.unit || '',
       })),

@@ -65,7 +65,7 @@ export default function WeeklyPlan() {
                   </span>
                 </div>
                 {/* 3 Punkte Menü Icon */}
-                <button className="text-gray-400">
+                <button className="text-gray-400 h-14 w-14 flex items-center justify-center">
                   <DotsThreeVertical size={24} weight="bold" />
                 </button>
               </div>

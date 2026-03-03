@@ -35,7 +35,7 @@ function NavItem({ to, icon: Icon, label }) {
 // 2. Deine eigentliche Navigation ist jetzt extrem sauber:
 export function MobileNavigation() {
   return (
-    <nav className="fixed bottom-0 z-50 w-full bg-white border-t border-border-default px-6 py-4 flex justify-between items-center">
+    <nav className="fixed bottom-0 z-50 w-full bg-white border-t border-border-default px-6 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex justify-between items-center">
 
       <NavItem
         to="/"

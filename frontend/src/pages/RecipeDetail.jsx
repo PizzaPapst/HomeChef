@@ -5,6 +5,7 @@ import { PortionStepper } from "@/components/PortionStepper";
 import IngredientEntry from "../components/IngredientEntry";
 import CookingStep from "@/components/CookingStep";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 import { FlyoutMenu } from "@/components/FlyoutMenu";
 import { deleteRecipe, fetchRecipeById } from "@/services/api";
 
@@ -13,18 +14,38 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
 
   const [recipe, setRecipe] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentServings, setCurrentServings] = useState(0);
 
   useEffect(() => {
-    fetchRecipeById(id).then(data => {
-      if (data) {
-        setRecipe(data);
-        setCurrentServings(data.servings);
-      }
-    });
+    setLoading(true);
+    fetchRecipeById(id)
+      .then(data => {
+        if (data) {
+          setRecipe(data);
+          setCurrentServings(data.servings);
+        } else {
+          setError("Rezept wurde nicht gefunden.");
+        }
+      })
+      .catch(err => {
+        console.error("Fehler beim Laden:", err);
+        setError("Ein Fehler ist beim Laden des Rezepts aufgetreten.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [id]);
 
-  if (!recipe) return <div className="p-8 text-center text-text-subinfo">Lädt...</div>;
+  if (loading) return <div className="p-8 text-center text-text-subinfo">Lädt...</div>;
+  if (error) return (
+    <div className="p-8 flex flex-col items-center gap-4">
+      <p className="text-center text-red-500 font-medium">{error}</p>
+      <Button onClick={() => navigate("/")}>Zurück zum Kochbuch</Button>
+    </div>
+  );
+  if (!recipe) return null;
 
   const image = recipe.imageUrl || "https://images.unsplash.com/photo-1543353071-087092ec393a?q=80&w=1000&auto=format&fit=crop";
 
@@ -59,13 +80,13 @@ export default function RecipeDetail() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col gap-1 relative">
-      <div className="bg-custom-bg flex flex-col flex-1 gap-8">
+    <div className="flex-1 overflow-y-auto no-scrollbar relative">
+      <div className="bg-white flex flex-col gap-8">
         <div className="flex flex-col gap-4 w-full relative">
           <img
             src={image}
             alt={recipe.title}
-            className="object-cover w-full aspect-[1/1]"
+            className="object-cover w-full aspect-[1/1] rounded-bl-2xl rounded-br-2xl"
           />
 
           <div className="flex flex-col gap-4 w-full px-4">
@@ -113,27 +134,22 @@ export default function RecipeDetail() {
       </div>
 
       {/* Navigation Buttons */}
-      <Button
-        variant="fab"
-        size="icon"
+      <IconButton
+        variant="floating"
         onClick={() => navigate(-1)}
-        className="h-12 w-12 rounded-full bg-white p-0 absolute top-4 left-4 z-50"
+        className="absolute top-4 left-4 z-50"
       >
         <ArrowLeft size={24} weight="bold" />
-        <span className="sr-only">Zurück</span>
-      </Button>
+      </IconButton>
 
       <div className="absolute top-4 right-4 z-50">
         <FlyoutMenu
           trigger={
-            <Button
-              variant="fab"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-white p-0"
+            <IconButton
+              variant="floating"
             >
               <DotsThreeVertical size={24} weight="bold" />
-              <span className="sr-only">Menü öffnen</span>
-            </Button>
+            </IconButton>
           }
           items={menuItems}
         />

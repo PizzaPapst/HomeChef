@@ -9,7 +9,8 @@ import {
   Plus,
   Minus,
   Trash,
-  Check
+  Check,
+  DotsSixVertical
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,17 +24,21 @@ const defaultValues = {
   prepTime: 45,
   imageUrl: "",
   ingredients: [
-    { amount: "500", unit: "g", name: "Hackfleisch" }, // Beispiel aus deinem Screenshot
-    { amount: "", unit: "", name: "" }
+    { amount: "500", unit: "g", name: "Hackfleisch" }
   ],
   instructions: [{ step: 1, text: "" }]
 };
+
+const UNITS = [
+  "g", "kg", "ml", "l", "Stk.", "Pck.", "Dose", "Bd.", "Zehe", "EL", "TL", "Prise", "Spritzer", "Etwas"
+];
 
 export default function CreateRecipeWizard({ initialData = null }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(initialData ? 2 : 1);
   const [isLoading, setIsLoading] = useState(false);
   const [importUrl, setImportUrl] = useState("");
+  const [openUnitIndex, setOpenUnitIndex] = useState(null); // Track which unit dropdown is open
 
   // Formular Setup
   const { register, control, handleSubmit, reset, trigger, setValue, watch, formState: { errors } } = useForm({
@@ -51,8 +56,9 @@ export default function CreateRecipeWizard({ initialData = null }) {
     name: "instructions"
   });
 
-  // Beobachte Werte für den Custom Stepper
+  // Beobachte Werte für den Custom Stepper & Combobox
   const currentServings = watch("servings");
+  const watchedIngredients = watch("ingredients");
 
   // --- LOGIK ---
 
@@ -195,24 +201,38 @@ export default function CreateRecipeWizard({ initialData = null }) {
 
         {/* SCHRITT 1: IMPORT */}
         {step === 1 && (
-          <div className="flex flex-1 flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4 gap-4 justify-center items-center">
-            {/* Das Icon im Kreis */}
-            <div className="bg-brand-teal-10 h-[80px] w-[80px] rounded-full flex items-center justify-center">
-              <LinkIcon size={36} className="text-brand-teal" weight="bold" />
-            </div>
+          <div className="flex flex-1 flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4 gap-4 justify-center">
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-6">
+                <div className="h-16 w-16 border-4 border-brand-teal-10 border-t-brand-teal rounded-full animate-spin"></div>
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-xl font-bold">Magie im Gange...</h2>
+                  <p className="text-text-subinfo">
+                    Wir extrahieren das Rezept für dich. <br />
+                    Bei Videos kann das bis zu 30 Sekunden dauern.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-brand-teal-10 h-[80px] w-[80px] rounded-full flex items-center justify-center">
+                  <LinkIcon size={36} className="text-brand-teal" weight="bold" />
+                </div>
 
-            <h2 className="text-2xl font-bold">Rezept importieren</h2>
-            <p className="text-text-subinfo leading-relaxed">
-              Füge eine URL ein, zum Beispiel von Chefkoch.de, um automatisch zu starten
-            </p>
+                <h2 className="text-2xl font-bold">Rezept importieren</h2>
+                <p className="text-text-subinfo leading-relaxed">
+                  Füge einen Link von YouTube, Instagram, TikTok oder Chefkoch ein
+                </p>
 
-            <div className="w-full">
-              <Input
-                placeholder="https://..."
-                value={importUrl}
-                onChange={(e) => setImportUrl(e.target.value)}
-              />
-            </div>
+                <div className="w-full">
+                  <Input
+                    placeholder="https://..."
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -280,39 +300,86 @@ export default function CreateRecipeWizard({ initialData = null }) {
         {/* SCHRITT 3: ZUTATEN */}
         {step === 3 && (
           <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6">
               {ingredientFields.map((field, index) => (
-                <div key={field.id} className="flex gap-2 items-center">
-                  {/* Menge */}
-                  <div className="w-20">
-                    <Input
-                      placeholder="500"
-                      {...register(`ingredients.${index}.amount`)}
-                      className="text-center"
-                    />
+                <div key={field.id} className="flex gap-4 items-center animate-in fade-in slide-in-from-bottom-2">
+
+                  {/* Drag Handle */}
+                  <div className="text-text-subinfo">
+                    <DotsSixVertical size={24} />
                   </div>
-                  {/* Einheit */}
-                  <div className="w-20">
-                    <Input
-                      placeholder="g"
-                      {...register(`ingredients.${index}.unit`)}
-                      className="text-center"
-                    />
+
+                  {/* Input Box Container */}
+                  <div className="flex-1 flex flex-col border border-border-default rounded-lg bg-white shadow-sm">
+                    {/* Top Row: Amount & Unit */}
+                    <div className="flex border-b border-border-default h-14">
+                      <div className="w-[33%] flex items-center px-4">
+                        <input
+                          placeholder="Menge"
+                          {...register(`ingredients.${index}.amount`)}
+                          className="w-full text-lg focus:outline-none placeholder:text-text-subinfo"
+                        />
+                      </div>
+                      <div className="w-px bg-border-default h-full"></div>
+                      <div className="flex-1 relative flex items-center">
+                        <input
+                          placeholder="Einheit"
+                          {...register(`ingredients.${index}.unit`)}
+                          onFocus={() => setOpenUnitIndex(index)}
+                          onBlur={() => setTimeout(() => setOpenUnitIndex(null), 300)}
+                          className="w-full h-full px-4 text-lg focus:outline-none placeholder:text-text-subinfo bg-transparent"
+                          autoComplete="off"
+                        />
+
+                        {/* Custom Flyout / Combobox Options */}
+                        {openUnitIndex === index && (() => {
+                          const currentUnitValue = watchedIngredients?.[index]?.unit || "";
+                          const filteredUnits = UNITS.filter(u =>
+                            u.toLowerCase().startsWith(currentUnitValue.toLowerCase())
+                          );
+
+                          if (filteredUnits.length === 0 && currentUnitValue !== "") return null;
+
+                          return (
+                            <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-white border border-border-default rounded shadow-card-shadow max-h-[192px] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+                              <div className="py-1">
+                                {(filteredUnits.length > 0 ? filteredUnits : UNITS).map(unit => (
+                                  <button
+                                    key={unit}
+                                    type="button"
+                                    onMouseDown={() => {
+                                      setValue(`ingredients.${index}.unit`, unit);
+                                      setOpenUnitIndex(null);
+                                    }}
+                                    className="w-full text-left px-4 py-3 hover:bg-brand-teal-10 text-text-default transition-colors text-base"
+                                  >
+                                    {unit}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Bottom Row: Name */}
+                    <div className="h-14 flex items-center px-4">
+                      <input
+                        placeholder="Zutat"
+                        {...register(`ingredients.${index}.name`, { required: true })}
+                        className="w-full text-lg focus:outline-none placeholder:text-text-subinfo"
+                      />
+                    </div>
                   </div>
-                  {/* Name */}
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Zutat"
-                      {...register(`ingredients.${index}.name`, { required: true })}
-                    />
-                  </div>
-                  {/* Löschen */}
+
+                  {/* Delete Button */}
                   <button
                     type="button"
                     onClick={() => removeIngredient(index)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg ml-1"
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   >
-                    <Trash size={24} />
+                    <Trash size={28} />
                   </button>
                 </div>
               ))}
@@ -322,7 +389,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
             <button
               type="button"
               onClick={() => appendIngredient({ amount: "", unit: "", name: "" })}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-14 px-4 font-medium"
             >
               <Plus size={20} weight="bold" /> Zutat hinzufügen
             </button>
