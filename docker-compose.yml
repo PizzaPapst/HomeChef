@@ -63,6 +63,9 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     restart: always
+    networks:
+      - default
+      - proxy-net
   
   frontend:
     build:
@@ -76,3 +79,11 @@ services:
     ports:
       - "81:80" # Frontend erreichbar unter Port 80
     restart: always
+    networks:
+      - default
+      - proxy-net
+
+networks:
+  proxy-net:
+    external: true
+    name: docker-proxy_proxy-netzwerk
