@@ -9,6 +9,7 @@ import SearchPage from "./pages/SearchPage";
 import EditRecipePage from "./pages/EditRecipePage";
 import WeeklyPlanWizard from "./pages/WeeklyPlanWizard";
 import CategoryView from "./pages/CategoryView";
+import SearchResultsPage from "./pages/SearchResultsPage";
 
 function App() {
   const location = useLocation();
@@ -29,6 +30,7 @@ function App() {
         <Route path="/" element={<Cookbook />} />
         <Route path="/plan" element={<WeeklyPlan />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/search/results" element={<SearchResultsPage />} />
 
         {/* Der Doppelpunkt :id ist ein Platzhalter für irgendeine Nummer */}
         <Route path="/recipe/:id" element={<RecipeDetail />} />

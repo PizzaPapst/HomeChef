@@ -234,17 +234,16 @@ const RecipeCard = ({
 // Section Header Helper Component
 export const RecipeSectionHeader = ({ title, showAll = true, onShowAll, className }) => {
   return (
-    <div className={cn("flex justify-between items-center mb-3", className)}>
+    <div className={cn("flex justify-between items-center min-h-12", className)}>
       <h2 className={cn(
-        "font-semibold font-['Poppins'] text-text-default",
-        title === "Featured" ? "text-xl" : "text-lg"
+        "font-semibold text-text-default text-xl"
       )}>
         {title}
       </h2>
       {showAll && (
         <button
           onClick={onShowAll}
-          className="flex items-center gap-1 text-sm font-medium font-['Poppins'] text-brand-teal hover:underline"
+          className="flex items-center justify-end gap-1 text-sm font-medium text-brand-teal min-h-12 min-w-12"
         >
           Alle
           <CaretRight size={16} weight="bold" />

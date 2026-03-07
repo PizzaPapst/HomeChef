@@ -1,9 +1,9 @@
 import { RecipeCard, RecipeSectionHeader } from "../components/RecipeCard";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, MagnifyingGlass } from "@phosphor-icons/react";
+import { Plus } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { IconButton } from "@/components/ui/IconButton";
+import Searchbar from "../components/ui/Searchbar";
 
 export default function Cookbook() {
   const navigate = useNavigate();
@@ -19,23 +19,17 @@ export default function Cookbook() {
   }, [apiUrl]);
 
   return (
-    <div className="flex flex-col gap-4 h-full bg-white px-4 pt-4 pb-24 overflow-hidden">
+    <div className="flex flex-col gap-8 h-full bg-white px-4 pt-4 pb-24 overflow-hidden">
       {/* Header */}
       <div className="flex justify-between items-start flex-shrink-0">
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold font-['Poppins'] text-text-default">Dein Kochbuch</h1>
-          <p className="text-text-label font-['Poppins'] text-base">Entdecke leckere Rezepte</p>
-        </div>
-        <IconButton variant="standalone" onClick={() => navigate("/search")}>
-          <MagnifyingGlass size={20} weight="bold" />
-        </IconButton>
+        <Searchbar variant="button" />
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex flex-col gap-6 flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex flex-col gap-8 flex-1 overflow-y-auto no-scrollbar">
         {/* Featured Section */}
-        <section className="flex-shrink-0">
-          <RecipeSectionHeader title="Rezept des Tages" showAll={false} />
+        <section className="flex-shrink-0 flex flex-col gap-0">
+          <RecipeSectionHeader title="Vorschlag des Tages" showAll={false} />
           {recipes.length > 0 ? (
             <RecipeCard
               variant="large"
@@ -46,7 +40,6 @@ export default function Cookbook() {
             <div className="h-[240px] w-full bg-bg-light-gray rounded-[16px] animate-pulse" />
           )}
         </section>
-
         <section className="relative flex-shrink-0">
           <RecipeSectionHeader
             title="Schnelle Rezepte"

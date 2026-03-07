@@ -1,9 +1,14 @@
 import { RecipeCard } from "../components/RecipeCard";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { MagnifyingGlass, ArrowLeft, X } from "@phosphor-icons/react";
-import { IconButton } from "@/components/ui/IconButton";
-import SearchOverlay from "../components/SearchOverlay";
+import { CaretDown, ArrowRight } from "@phosphor-icons/react";
+import Searchbar from "../components/ui/Searchbar";
+import { Pill } from "../components/ui/Pill";
+import { Button } from "../components/ui/button";
+import { cn } from "../lib/utils";
+import FilterOverlay from "../components/FilterOverlay";
+import TimeFilterOverlay from "../components/TimeFilterOverlay";
+import IngredientFilterOverlay from "../components/IngredientFilterOverlay";
 
 const SEARCHABLE_BASE_INGREDIENTS = [
     "Apfel", "Aubergine", "Avocado", "Banane", "Bärlauch", "Blumenkohl", "Brokkoli", "Bulgur",
@@ -19,7 +24,8 @@ export default function SearchPage() {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [recipes, setRecipes] = useState([])
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [activeFilter, setActiveFilter] = useState(null); // 'time' or 'ingredients'
+    const [ingredientSearch, setIngredientSearch] = useState("");
 
     // Initialize state from URL if present
     const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
@@ -29,147 +35,181 @@ export default function SearchPage() {
     );
 
     const [recentSearches, setRecentSearches] = useState([
-        { term: "Chili con", count: 5 },
-        { term: "Brokkoli Kartoffel", count: 1 },
-        { term: "Avocado", count: 5 }
+        { term: "Chili", count: 0 },
+        { term: "Brokkoli Kartoffel", count: 0 },
+        { term: "Avocado", count: 0 }
     ]);
+
+    const searchInputRef = useRef(null);
+
+    // Auto-focus the search input on mount
+    useEffect(() => {
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, []);
+
+    const activeFilterCount = useMemo(() => {
+        return (selectedTime ? 1 : 0) + selectedIngredients.length;
+    }, [selectedTime, selectedIngredients]);
 
     const apiUrl = import.meta.env.VITE_API_URL;
 
-    useEffect(() => {
-        if (!apiUrl) return;
-
-        fetch(`${apiUrl}/recipes`)
-            .then(response => response.json())
-            .then(data => setRecipes(data))
-            .catch(error => console.error('Fehler beim Laden:', error));
-    }, [apiUrl]);
-
-    // If no search query, open the overlay immediately
-    useEffect(() => {
-        if (!searchQuery && !selectedTime && selectedIngredients.length === 0) {
-            setIsSearchOpen(true);
-        }
-    }, [searchQuery, selectedTime, selectedIngredients]);
-
     const handleSearch = (query) => {
         setSearchQuery(query);
-        setIsSearchOpen(false);
+        setActiveFilter(null);
 
-        // Update URL
+        // Update URL and Navigate to results
         const params = new URLSearchParams();
         if (query) params.set("q", query);
         if (selectedTime) params.set("time", selectedTime);
         if (selectedIngredients.length > 0) params.set("ingredients", selectedIngredients.join(","));
+
+        // Update URL for the current page (keeping state in sync)
         setSearchParams(params);
 
         setRecentSearches(prev => {
             const exists = prev.find(s => s.term.toLowerCase() === query.toLowerCase());
             if (exists) return prev;
-            return [{ term: query, count: Math.floor(Math.random() * 10) + 1 }, ...prev].slice(0, 5);
+            return [{ term: query, count: 0 }, ...prev].slice(0, 5);
         });
+
+        // Navigate to results page
+        navigate(`/search/results?${params.toString()}`);
     };
 
-    const handleCloseSearch = () => {
-        setIsSearchOpen(false);
-        // If we're closing the search overlay and there's no query, go back to cookbook
-        if (!searchQuery && !selectedTime && selectedIngredients.length === 0) {
-            navigate("/");
-        }
+    const handleCloseFilter = () => {
+        setActiveFilter(null);
+        setIngredientSearch("");
     };
-
-    const filteredRecipes = useMemo(() => {
-        return recipes.filter(r => {
-            const matchesSearch = !searchQuery || (r.title && r.title.toLowerCase().includes(searchQuery.toLowerCase()));
-            const prepTimeValue = r.prepTime ? parseInt(r.prepTime) : 0;
-            const matchesTime = !selectedTime || (
-                selectedTime <= 45
-                    ? (prepTimeValue > 0 && prepTimeValue <= selectedTime)
-                    : (prepTimeValue > 45)
-            );
-            const matchesIngredients = selectedIngredients.length === 0 || (
-                selectedIngredients.every(selected =>
-                    r.ingredients?.some(i => {
-                        const name = i.name.toLowerCase();
-                        const normalized = i.normalizedName?.toLowerCase() || "";
-                        const search = selected.toLowerCase();
-                        return name.includes(search) || normalized.includes(search);
-                    })
-                )
-            );
-            return matchesSearch && matchesTime && matchesIngredients;
-        });
-    }, [recipes, searchQuery, selectedTime, selectedIngredients]);
 
     return (
-        <div className="flex flex-1 flex-col gap-1 bg-custom-bg min-h-screen">
-            <div className="bg-custom-bg flex flex-col flex-1 gap-8 px-4 pt-6">
+        <div className="flex flex-col h-screen bg-white overflow-hidden">
+            {/* Header / Searchbar */}
+            <div className="px-4 py-4 border-b border-border-default/30">
+                <Searchbar
+                    ref={searchInputRef}
+                    variant="default"
+                    placeholder="Rezept suchen"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="focus-within:ring-2 focus-within:ring-brand-teal/10"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSearch(searchQuery);
+                    }}
+                />
+            </div>
 
-                <div className="flex items-center gap-4">
-                    <CardIconButton onClick={() => navigate("/")}>
-                        <ArrowLeft size={20} weight="bold" />
-                    </CardIconButton>
-
-                    <div
-                        className="flex-1 h-14 bg-white border border-border rounded-xl px-4 flex items-center justify-between cursor-pointer"
-                        onClick={() => setIsSearchOpen(true)}
-                    >
-                        <span className="text-text-default font-medium">{searchQuery || "Suche..."}</span>
-                        {(selectedTime || selectedIngredients.length > 0) && (
-                            <div className="w-8 h-8 rounded-full bg-brand-orange flex items-center justify-center text-white text-sm font-bold shadow-sm">
-                                {(selectedTime ? 1 : 0) + selectedIngredients.length}
-                            </div>
-                        )}
-                    </div>
-
-                    <CardIconButton onClick={() => { setSearchQuery(""); setIsSearchOpen(true); }}>
-                        <X size={20} weight="bold" />
-                    </CardIconButton>
-                </div>
-
-                <div className="flex flex-col gap-4 pb-10">
-                    <h2 className="font-semibold text-lg">
-                        {filteredRecipes.length} Rezepte gefunden
-                    </h2>
-                    {filteredRecipes.length > 0 ? (
-                        filteredRecipes.map((recipe) => (
-                            <RecipeCard key={recipe.id} recipe={recipe} />
-                        ))
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <p className="text-text-subinfo italic">Keine Rezepte gefunden.</p>
-                        </div>
+            {/* Filter Section */}
+            <div className="flex gap-2 px-4 py-6">
+                <Pill
+                    icon={CaretDown}
+                    className={cn(
+                        "text-sm font-normal py-2.5",
+                        selectedTime ? "bg-brand-teal text-white" : "bg-bg-light-gray"
                     )}
+                    onClick={() => setActiveFilter('time')}
+                >
+                    Zubereitungszeit
+                </Pill>
+                <Pill
+                    icon={CaretDown}
+                    className={cn(
+                        "text-sm font-normal py-2.5",
+                        selectedIngredients.length > 0 ? "bg-brand-teal text-white" : "bg-bg-light-gray"
+                    )}
+                    onClick={() => setActiveFilter('ingredients')}
+                >
+                    Zutaten
+                </Pill>
+                <Pill
+                    className="text-sm font-normal py-2.5 bg-bg-light-gray"
+                >
+                    Kalorien
+                </Pill>
+            </div>
+
+            {/* Recent Searches (Always visible as per mockup) */}
+            <div className="flex-1 px-4 overflow-y-auto no-scrollbar pt-2">
+                <div className="flex flex-col gap-4">
+                    <h3 className="text-base font-semibold text-text-default">Letzte Suchanfragen</h3>
+                    <div className="flex flex-col rounded-2xl overflow-hidden shadow-sm">
+                        {recentSearches.map((item, index) => (
+                            <button
+                                key={index}
+                                className="flex justify-between items-center px-4 py-5 bg-bg-light-gray border-b border-white/50 last:border-none active:bg-border-default transition-colors text-left"
+                                onClick={() => handleSearch(item.term)}
+                            >
+                                <span className="text-text-default font-normal text-base">{item.term}</span>
+                                {activeFilterCount > 0 && (
+                                    <span className="text-text-subinfo text-sm font-medium">+{activeFilterCount}</span>
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            <SearchOverlay
-                isOpen={isSearchOpen}
-                onClose={handleCloseSearch}
-                onSearch={handleSearch}
-                recentSearches={recentSearches}
-                initialQuery={searchQuery}
-                selectedTime={selectedTime}
-                setSelectedTime={(time) => {
-                    setSelectedTime(time);
-                    // Dynamic update URL if search is active
-                    if (searchQuery) {
-                        const params = new URLSearchParams(searchParams);
-                        if (time) params.set("time", time); else params.delete("time");
-                        setSearchParams(params);
-                    }
-                }}
-                selectedIngredients={selectedIngredients}
-                setSelectedIngredients={(ing) => {
-                    setSelectedIngredients(ing);
-                    if (searchQuery) {
-                        const params = new URLSearchParams(searchParams);
-                        if (ing.length > 0) params.set("ingredients", ing.join(",")); else params.delete("ingredients");
-                        setSearchParams(params);
-                    }
-                }}
-                availableIngredients={SEARCHABLE_BASE_INGREDIENTS}
-            />
+            {/* Footer */}
+            <div className="px-4 pb-10 pt-4 bg-white flex flex-col items-center gap-6 border-t border-border-default/20">
+                {activeFilterCount > 0 || searchQuery ? (
+                    <button
+                        className="text-red-500 font-semibold text-sm hover:underline"
+                        onClick={() => {
+                            setSearchQuery("");
+                            setSelectedTime(null);
+                            setSelectedIngredients([]);
+                        }}
+                    >
+                        Suche zurücksetzen
+                    </button>
+                ) : (
+                    <div className="h-5" />
+                )}
+
+                <Button
+                    className="w-full h-15 bg-brand-teal hover:bg-brand-teal/90 text-white rounded-[32px] font-semibold text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
+                    onClick={() => handleSearch(searchQuery)}
+                >
+                    Alle Rezepte anzeigen
+                    <ArrowRight size={20} weight="bold" />
+                </Button>
+            </div>
+
+            {/* Filter Overlays */}
+            <FilterOverlay
+                isOpen={activeFilter === 'time'}
+                onClose={handleCloseFilter}
+                title="Zubereitungszeit"
+            >
+                <TimeFilterOverlay
+                    selectedTime={selectedTime}
+                    onSelect={(time) => {
+                        setSelectedTime(time);
+                        setActiveFilter(null);
+                    }}
+                />
+            </FilterOverlay>
+
+            <FilterOverlay
+                isOpen={activeFilter === 'ingredients'}
+                onClose={handleCloseFilter}
+                showSearch
+                searchValue={ingredientSearch}
+                onSearchChange={setIngredientSearch}
+            >
+                <IngredientFilterOverlay
+                    ingredients={SEARCHABLE_BASE_INGREDIENTS}
+                    selectedIngredients={selectedIngredients}
+                    searchQuery={ingredientSearch}
+                    onReset={() => setSelectedIngredients([])}
+                    onToggle={(ing) => {
+                        setSelectedIngredients(prev =>
+                            prev.includes(ing) ? prev.filter(i => i !== ing) : [...prev, ing]
+                        );
+                    }}
+                />
+            </FilterOverlay>
         </div>
-    )
+    );
 }

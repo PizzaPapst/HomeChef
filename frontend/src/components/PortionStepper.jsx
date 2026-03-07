@@ -14,14 +14,14 @@ export function PortionStepper({ servings, onUpdate }) {
           onClick={() => onUpdate(Math.max(1, servings - 1))}
           disabled={servings <= 1}
         >
-          <Minus size={24} weight="bold" />
+          <Minus size={20} weight="bold" />
         </IconButton>
 
         <IconButton
           variant="standalone"
           onClick={() => onUpdate(servings + 1)}
         >
-          <Plus size={24} weight="bold" />
+          <Plus size={20} weight="bold" />
         </IconButton>
       </div>
     </div>
