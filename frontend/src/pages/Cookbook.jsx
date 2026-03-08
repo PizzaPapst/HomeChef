@@ -22,7 +22,7 @@ export default function Cookbook() {
     <div className="flex flex-col gap-8 h-full bg-white px-4 pt-4 pb-24 overflow-hidden">
       {/* Header */}
       <div className="flex justify-between items-start flex-shrink-0">
-        <Searchbar variant="button" />
+        <Searchbar variant="button" placeholder="Rezept suchen" />
       </div>
 
       {/* Scrollable Content */}

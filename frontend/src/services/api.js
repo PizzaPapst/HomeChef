@@ -37,8 +37,26 @@ export async function fetchRecipeById(id) {
   }
 }
 
-// src/services/api.js
-// ... deine fetchAllRecipes Funktion ...
+export async function deleteSearchHistory(term, filterCount, filters) {
+  try {
+    const response = await fetch(`${API_URL}/search-history`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ term, filterCount, filters }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Fehler beim Löschen der Suchanfrage");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API Fehler:", error);
+    return null;
+  }
+}
 
 export async function saveWeeklyPlan(payload) {
   const response = await fetch(`${API_URL}/meal-plans/week`, {
@@ -90,4 +108,36 @@ export async function deleteRecipe(id) {
   }
 
   return true;
+}
+
+export async function fetchRecentSearches() {
+  try {
+    const response = await fetch(`${API_URL}/search-history`);
+    if (!response.ok) throw new Error('Fehler beim Laden der Suchhistorie');
+    return await response.json();
+  } catch (error) {
+    console.error("API Fehler:", error);
+    return [];
+  }
+}
+
+export async function saveSearchHistory(term, filterCount, filters) {
+  try {
+    const response = await fetch(`${API_URL}/search-history`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ term, filterCount, filters }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Fehler beim Speichern der Suchanfrage");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API Fehler:", error);
+    return null;
+  }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "@phosphor-icons/react";
 import { RecipeCard } from "../components/RecipeCard";
 import Searchbar from "../components/ui/Searchbar";
 
@@ -53,16 +54,33 @@ export default function SearchResultsPage() {
         });
     }, [recipes, searchQuery, selectedTime, selectedIngredients]);
 
+    const activeFilterCount = useMemo(() => {
+        return (selectedTime ? 1 : 0) + selectedIngredients.length;
+    }, [selectedTime, selectedIngredients]);
+
+    const handleReEnterSearch = () => {
+        // Navigate to search with current params
+        // We also pass a flag or the search page knows it's coming from results
+        navigate(`/search?${searchParams.toString()}&from_results=true`);
+    };
+
     return (
         <div className="flex flex-col h-screen bg-white">
             {/* Header */}
-            <div className="px-4 py-4 border-b border-border-default/30">
+            <div className="p-4 flex items-center gap-3 border-b border-border-default">
+                <button
+                    onClick={() => navigate("/")}
+                    className="p-2 -ml-2 rounded-full hover:bg-bg-light-gray transition-colors shrink-0"
+                >
+                    <ArrowLeft size={24} weight="bold" className="text-text-default" />
+                </button>
                 <Searchbar
-                    variant="default"
-                    placeholder="Suche..."
+                    variant="button"
                     value={searchQuery}
+                    filterCount={activeFilterCount}
                     readOnly
-                    onClick={() => navigate(`/search?${searchParams.toString()}`)}
+                    onClick={handleReEnterSearch}
+                    className="flex-1"
                 />
             </div>
 

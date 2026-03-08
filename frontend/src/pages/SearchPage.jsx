@@ -1,14 +1,13 @@
-import { RecipeCard } from "../components/RecipeCard";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CaretDown, ArrowRight } from "@phosphor-icons/react";
+import { ArrowRight } from "@phosphor-icons/react";
 import Searchbar from "../components/ui/Searchbar";
 import { Pill } from "../components/ui/Pill";
 import { Button } from "../components/ui/button";
-import { cn } from "../lib/utils";
 import FilterOverlay from "../components/FilterOverlay";
 import TimeFilterOverlay from "../components/TimeFilterOverlay";
 import IngredientFilterOverlay from "../components/IngredientFilterOverlay";
+import { fetchRecentSearches, saveSearchHistory, deleteSearchHistory } from "../services/api";
 
 const SEARCHABLE_BASE_INGREDIENTS = [
     "Apfel", "Aubergine", "Avocado", "Banane", "Bärlauch", "Blumenkohl", "Brokkoli", "Bulgur",
@@ -23,7 +22,6 @@ export default function SearchPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [recipes, setRecipes] = useState([])
     const [activeFilter, setActiveFilter] = useState(null); // 'time' or 'ingredients'
     const [ingredientSearch, setIngredientSearch] = useState("");
 
@@ -34,11 +32,36 @@ export default function SearchPage() {
         searchParams.get("ingredients") ? searchParams.get("ingredients").split(",") : []
     );
 
-    const [recentSearches, setRecentSearches] = useState([
-        { term: "Chili", count: 0 },
-        { term: "Brokkoli Kartoffel", count: 0 },
-        { term: "Avocado", count: 0 }
-    ]);
+    const [recentSearches, setRecentSearches] = useState([]);
+
+    useEffect(() => {
+        const loadHistory = async () => {
+            let history = await fetchRecentSearches();
+
+            // Check if we arrived from results and need to "activate" and "delete" the current search from history
+            if (searchParams.get("from_results") === "true") {
+                const term = searchParams.get("q") || "";
+                const time = searchParams.get("time") ? parseInt(searchParams.get("time")) : null;
+                const ingredients = searchParams.get("ingredients") ? searchParams.get("ingredients").split(",") : [];
+                const filters = { time, ingredients };
+                const filterCount = (time ? 1 : 0) + ingredients.length;
+
+                // Use the top-level import
+                await deleteSearchHistory(term, filterCount, filters);
+
+                // Refresh history after deletion
+                history = await fetchRecentSearches();
+
+                // Remove the flag from URL without reloading
+                const newParams = new URLSearchParams(searchParams);
+                newParams.delete("from_results");
+                setSearchParams(newParams, { replace: true });
+            }
+
+            setRecentSearches(history);
+        };
+        loadHistory();
+    }, [searchParams, setSearchParams]);
 
     const searchInputRef = useRef(null);
 
@@ -53,25 +76,42 @@ export default function SearchPage() {
         return (selectedTime ? 1 : 0) + selectedIngredients.length;
     }, [selectedTime, selectedIngredients]);
 
-    const apiUrl = import.meta.env.VITE_API_URL;
+    const handleSearch = (query, filters = null) => {
+        let currentQuery = query;
+        let currentTime = selectedTime;
+        let currentIngredients = selectedIngredients;
+        let currentFilterCount = activeFilterCount;
 
-    const handleSearch = (query) => {
-        setSearchQuery(query);
+        if (filters) {
+            currentTime = filters.time;
+            currentIngredients = filters.ingredients || [];
+            currentFilterCount = (currentTime ? 1 : 0) + currentIngredients.length;
+
+            // Re-sync local state if we want the UI to reflect these (e.g. pills)
+            setSelectedTime(currentTime);
+            setSelectedIngredients(currentIngredients);
+        }
+
+        setSearchQuery(currentQuery);
         setActiveFilter(null);
 
         // Update URL and Navigate to results
         const params = new URLSearchParams();
-        if (query) params.set("q", query);
-        if (selectedTime) params.set("time", selectedTime);
-        if (selectedIngredients.length > 0) params.set("ingredients", selectedIngredients.join(","));
+        if (currentQuery) params.set("q", currentQuery);
+        if (currentTime) params.set("time", currentTime);
+        if (currentIngredients.length > 0) params.set("ingredients", currentIngredients.join(","));
 
         // Update URL for the current page (keeping state in sync)
         setSearchParams(params);
 
-        setRecentSearches(prev => {
-            const exists = prev.find(s => s.term.toLowerCase() === query.toLowerCase());
-            if (exists) return prev;
-            return [{ term: query, count: 0 }, ...prev].slice(0, 5);
+        // Save to backend history (only if it's a new or modified search, not just re-clicking)
+        // Actually, we can just always save it, the backend handles the limit.
+        const saveFilters = {
+            time: currentTime,
+            ingredients: currentIngredients
+        };
+        saveSearchHistory(currentQuery, currentFilterCount, saveFilters).then(() => {
+            fetchRecentSearches().then(setRecentSearches);
         });
 
         // Navigate to results page
@@ -86,7 +126,7 @@ export default function SearchPage() {
     return (
         <div className="flex flex-col h-screen bg-white overflow-hidden">
             {/* Header / Searchbar */}
-            <div className="px-4 py-4 border-b border-border-default/30">
+            <div className="p-4 border-b border-border-default">
                 <Searchbar
                     ref={searchInputRef}
                     variant="default"
@@ -100,61 +140,44 @@ export default function SearchPage() {
                 />
             </div>
 
-            {/* Filter Section */}
-            <div className="flex gap-2 px-4 py-6">
-                <Pill
-                    icon={CaretDown}
-                    className={cn(
-                        "text-sm font-normal py-2.5",
-                        selectedTime ? "bg-brand-teal text-white" : "bg-bg-light-gray"
-                    )}
-                    onClick={() => setActiveFilter('time')}
-                >
-                    Zubereitungszeit
-                </Pill>
-                <Pill
-                    icon={CaretDown}
-                    className={cn(
-                        "text-sm font-normal py-2.5",
-                        selectedIngredients.length > 0 ? "bg-brand-teal text-white" : "bg-bg-light-gray"
-                    )}
-                    onClick={() => setActiveFilter('ingredients')}
-                >
-                    Zutaten
-                </Pill>
-                <Pill
-                    className="text-sm font-normal py-2.5 bg-bg-light-gray"
-                >
-                    Kalorien
-                </Pill>
-            </div>
+            {/* Body / Filter Section */}
+            <div className="flex flex-col gap-8 p-4 flex-1 overflow-y-auto no-scrollbar">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar shrink-0">
+                    <Pill onClick={() => setActiveFilter('time')}>
+                        Zubereitungszeit
+                    </Pill>
+                    <Pill onClick={() => setActiveFilter('ingredients')}>
+                        Zutaten
+                    </Pill>
+                    <Pill>Kalorien</Pill>
+                </div>
 
-            {/* Recent Searches (Always visible as per mockup) */}
-            <div className="flex-1 px-4 overflow-y-auto no-scrollbar pt-2">
-                <div className="flex flex-col gap-4">
-                    <h3 className="text-base font-semibold text-text-default">Letzte Suchanfragen</h3>
-                    <div className="flex flex-col rounded-2xl overflow-hidden shadow-sm">
-                        {recentSearches.map((item, index) => (
-                            <button
-                                key={index}
-                                className="flex justify-between items-center px-4 py-5 bg-bg-light-gray border-b border-white/50 last:border-none active:bg-border-default transition-colors text-left"
-                                onClick={() => handleSearch(item.term)}
-                            >
-                                <span className="text-text-default font-normal text-base">{item.term}</span>
-                                {activeFilterCount > 0 && (
-                                    <span className="text-text-subinfo text-sm font-medium">+{activeFilterCount}</span>
-                                )}
-                            </button>
-                        ))}
+                <div className="">
+                    <div className="flex flex-col gap-2">
+                        <h3 className="text-sm font-medium text-text-default">Letzte Suchanfragen</h3>
+                        <div className="flex flex-col rounded-sm overflow-hidden">
+                            {recentSearches.map((item, index) => (
+                                <button
+                                    key={index}
+                                    className="flex justify-between items-center px-3 bg-bg-light-gray min-h-12"
+                                    onClick={() => handleSearch(item.term, item.filters)}
+                                >
+                                    <span className={`text-sm ${item.term ? 'text-text-default' : 'text-text-subinfo'}`}>{item.term || "Leere Suche"}</span>
+                                    {item.filterCount > 0 && (
+                                        <span className="text-text-subinfo text-sm font-medium">+{item.filterCount}</span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Footer */}
-            <div className="px-4 pb-10 pt-4 bg-white flex flex-col items-center gap-6 border-t border-border-default/20">
+            <div className="p-4 bg-white flex flex-col items-center gap-4 border-t border-border-default">
                 {activeFilterCount > 0 || searchQuery ? (
                     <button
-                        className="text-red-500 font-semibold text-sm hover:underline"
+                        className="text-red-500 font-base hover:underline"
                         onClick={() => {
                             setSearchQuery("");
                             setSelectedTime(null);
@@ -168,7 +191,7 @@ export default function SearchPage() {
                 )}
 
                 <Button
-                    className="w-full h-15 bg-brand-teal hover:bg-brand-teal/90 text-white rounded-[32px] font-semibold text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all"
+                    className="w-full bg-brand-teal"
                     onClick={() => handleSearch(searchQuery)}
                 >
                     Alle Rezepte anzeigen

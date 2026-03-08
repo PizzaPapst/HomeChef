@@ -37,7 +37,7 @@ export default function CategoryView() {
     }, [apiUrl, category]);
 
     return (
-        <div className="flex flex-col gap-6 min-h-screen bg-white px-4 pt-4 pb-[100px]">
+        <div className="flex flex-col gap-6 h-full bg-white px-4 pt-4 pb-[100px] overflow-y-auto no-scrollbar">
             {/* Header */}
             <div className="flex items-center gap-4">
                 <IconButton variant="standalone" onClick={() => navigate(-1)}>

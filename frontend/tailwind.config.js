@@ -26,7 +26,7 @@ export default {
 				'text-label': '#5C5659',
 				'text-inverted': '#F6F9F9',
 				'border-default': '#DCDFDD',
-				'bg-light-gray': '#F5F4F5',
+				'bg-light-gray': '#F1F4F4',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				card: {

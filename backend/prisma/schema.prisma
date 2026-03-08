@@ -83,3 +83,12 @@ model MealPlan {
   @@unique([date]) 
 }
 
+model SearchHistory {
+  id          Int      @id @default(autoincrement())
+  term        String
+  filterCount Int      @default(0)
+  filters     Json?    // Stores { time: Int, ingredients: String[] }
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}

@@ -168,10 +168,10 @@ export default function WeeklyPlanWizard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col h-full bg-white overflow-hidden">
 
       {/* --- HEADER --- */}
-      <div className="sticky top-0 z-10 bg-white p-4 flex flex-col gap-2 border-b border-border-default">
+      <div className="flex-none bg-white p-4 flex flex-col gap-2 border-b border-border-default z-10">
         <div className="flex justify-between items-end">
           <h1 className="text-sm font-medium tracking-tight">Schritt {step} von {totalSteps}</h1>
           <span className="text-sm text-text-subinfo font-medium">{getStepName()}</span>
@@ -185,7 +185,7 @@ export default function WeeklyPlanWizard() {
       </div>
 
       {/* --- CONTENT AREA --- */}
-      <div className="flex flex-1 p-4 pb-[85px]">
+      <div className="flex flex-1 flex-col p-4 overflow-y-auto no-scrollbar">
 
         {/* SCHRITT 1: ZEITRAUM */}
         {step === 1 && (
@@ -315,7 +315,7 @@ export default function WeeklyPlanWizard() {
       )}
 
       {/* --- FOOTER --- */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-border-default flex justify-between items-center z-20">
+      <div className="flex-none p-4 bg-white border-t border-border-default flex justify-between items-center z-20">
         <button
           onClick={prevStep}
           className="flex items-center gap-2 text-text-default px-4 py-2 hover:text-gray-600 text-sm"
