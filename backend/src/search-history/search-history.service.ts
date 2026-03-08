@@ -56,19 +56,21 @@ export class SearchHistoryService {
                 where: { id: { in: idsToDelete } },
             });
         }
-    async deleteSearch(term: string, filterCount: number, filters: any) {
-            // Find the exact match
-            const searches = await this.prisma.searchHistory.findMany({
-                where: { term, filterCount },
-            });
+    }
 
-            for (const search of searches) {
-                if (JSON.stringify(search.filters) === JSON.stringify(filters)) {
-                    await this.prisma.searchHistory.delete({
-                        where: { id: search.id },
-                    });
-                    break; // Delete only one match
-                }
+    async deleteSearch(term: string, filterCount: number, filters: any) {
+        // Find the exact match
+        const searches = await this.prisma.searchHistory.findMany({
+            where: { term, filterCount },
+        });
+
+        for (const search of searches) {
+            if (JSON.stringify(search.filters) === JSON.stringify(filters)) {
+                await this.prisma.searchHistory.delete({
+                    where: { id: search.id },
+                });
+                break; // Delete only one match
             }
         }
     }
+}
