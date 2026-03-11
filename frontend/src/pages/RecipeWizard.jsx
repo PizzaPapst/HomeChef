@@ -270,21 +270,25 @@ export default function CreateRecipeWizard({ initialData = null }) {
               <div className="flex items-center justify-between border border-border-default rounded-l h-12 px-2 bg-white">
                 <span className="pl-2 text-lg font-medium">{currentServings}</span>
                 <div className="flex items-center gap-4 pr-2">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setValue("servings", Math.max(1, currentServings - 1))}
-                    className="text-brand-teal hover:bg-teal-50 p-1 rounded"
+                    className="text-brand-teal p-1 w-10 h-10"
                   >
                     <Minus size={24} weight="bold" />
-                  </button>
+                  </Button>
                   <div className="h-6 w-px bg-gray-200"></div>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setValue("servings", currentServings + 1)}
-                    className="text-brand-teal hover:bg-teal-50 p-1 rounded"
+                    className="text-brand-teal p-1 w-10 h-10"
                   >
                     <Plus size={24} weight="bold" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -344,17 +348,18 @@ export default function CreateRecipeWizard({ initialData = null }) {
                             <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-white border border-border-default rounded shadow-card-shadow max-h-[192px] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
                               <div className="py-1">
                                 {(filteredUnits.length > 0 ? filteredUnits : UNITS).map(unit => (
-                                  <button
+                                  <Button
                                     key={unit}
                                     type="button"
+                                    variant="ghost"
                                     onMouseDown={() => {
                                       setValue(`ingredients.${index}.unit`, unit);
                                       setOpenUnitIndex(null);
                                     }}
-                                    className="w-full text-left px-4 py-3 hover:bg-brand-teal-10 text-text-default transition-colors text-base"
+                                    className="w-full justify-start rounded-none h-auto py-3 px-4 text-left font-normal"
                                   >
                                     {unit}
-                                  </button>
+                                  </Button>
                                 ))}
                               </div>
                             </div>
@@ -374,25 +379,28 @@ export default function CreateRecipeWizard({ initialData = null }) {
                   </div>
 
                   {/* Delete Button */}
-                  <button
+                  <Button
                     type="button"
+                    variant="destructive"
+                    size="icon"
                     onClick={() => removeIngredient(index)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2"
                   >
                     <Trash size={28} />
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
 
             {/* Add Button */}
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => appendIngredient({ amount: "", unit: "", name: "" })}
-              className="flex items-center gap-2 h-14 px-4 font-medium"
+              className="flex items-center gap-2 font-medium"
             >
               <Plus size={20} weight="bold" /> Zutat hinzufügen
-            </button>
+            </Button>
           </div>
         )}
 
@@ -407,13 +415,15 @@ export default function CreateRecipeWizard({ initialData = null }) {
                     Schritt {index + 1}
                   </h3>
 
-                  <button
+                  <Button
                     type="button"
+                    variant="destructive"
+                    size="sm"
                     onClick={() => removeInstruction(index)}
-                    className="flex items-center gap-1.5 text-red-500 text-xs hover:text-red-600 transition-colors"
+                    className="flex items-center gap-1.5 text-xs h-8 px-2"
                   >
                     <Trash size={16} weight="regular" /> Schritt löschen
-                  </button>
+                  </Button>
                 </div>
 
                 {/* Das Textfeld */}
@@ -426,13 +436,14 @@ export default function CreateRecipeWizard({ initialData = null }) {
             ))}
 
             {/* Button zum Hinzufügen (Ganz unten) */}
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => appendInstruction({ step: instructionFields.length + 1, text: "" })}
               className="flex items-center gap-2 font-medium mt-2"
             >
               <Plus size={20} weight="bold" /> Schritt hinzufügen
-            </button>
+            </Button>
 
             {/* Platzhalter unten, damit der Footer nichts verdeckt beim Scrollen */}
             <div className="h-4"></div>
@@ -443,26 +454,29 @@ export default function CreateRecipeWizard({ initialData = null }) {
 
       {/* --- FOOTER --- */}
       <div className="flex-none p-4 bg-white border-t border-border-default flex justify-between items-center z-20">
-        <button
+        <Button
+          variant="ghost"
           onClick={prevStep}
-          className="flex items-center gap-2 text-text-default px-4 py-2 hover:text-gray-600 text-sm"
+          className="flex items-center gap-2"
         >
           <ArrowLeft size={16} weight="bold" />
           {step === 1 ? "Abbrechen" : "Zurück"}
-        </button>
+        </Button>
 
         {step < 4 ? (
           <Button
+            variant="primary"
             onClick={step === 1 ? handleImport : nextStep}
             disabled={step === 1 && !importUrl}
-            className="bg-brand-teal hover:bg-teal-600 text-white rounded-l px-4 py-2 text-sm font-medium flex items-center gap-2"
+            className="flex items-center gap-2"
           >
             {step === 1 ? "Import" : "Weiter"} <ArrowRight size={16} weight="bold" />
           </Button>
         ) : (
           <Button
+            variant="primary"
             onClick={handleSubmit(onSubmit)}
-            className="bg-brand-teal hover:bg-teal-600 text-white rounded-l px-4 py-2 font-medium text-sm flex items-center gap-2"
+            className="flex items-center gap-2"
           >
             Fertigstellen <Check size={16} weight="bold" />
           </Button>

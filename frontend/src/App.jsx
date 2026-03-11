@@ -8,7 +8,6 @@ import { MobileNavigation } from "./components/MobileNavigation";
 import SearchPage from "./pages/SearchPage";
 import EditRecipePage from "./pages/EditRecipePage";
 import WeeklyPlanWizard from "./pages/WeeklyPlanWizard";
-import CategoryView from "./pages/CategoryView";
 import SearchResultsPage from "./pages/SearchResultsPage";
 
 function App() {
@@ -23,7 +22,7 @@ function App() {
 
   return (
     // pb-24 (Padding unten) brauchen wir nur, wenn die Nav da ist, sonst stört der Platz
-    <div className="bg-custom-bg h-[100dvh] font-sans flex flex-col overflow-hidden">
+    <div className="bg-bg-alternation h-[100dvh] font-sans flex flex-col overflow-hidden">
       <ScrollToTop />
 
       <Routes>
@@ -37,7 +36,6 @@ function App() {
         <Route path="/recipe/create" element={<RecipeWizard />} />
         <Route path="/recipes/:id/edit" element={<EditRecipePage />} />
         <Route path="/plan/create" element={<WeeklyPlanWizard />} />
-        <Route path="/recipes/category/:category" element={<CategoryView />} />
       </Routes>
 
       {/* Bedingtes Rendern: Nur anzeigen wenn true */}

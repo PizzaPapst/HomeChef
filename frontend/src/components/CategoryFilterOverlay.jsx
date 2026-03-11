@@ -1,16 +1,12 @@
 import React from 'react';
 import { Pill } from "./ui/Pill";
-import { cn } from "@/lib/utils";
 
-const timeOptions = [
-    { label: "Alle", value: null },
-    { label: "Bis 15 min", value: 15 },
-    { label: "Bis 30 min", value: 30 },
-    { label: "Bis 45 min", value: 45 },
-    { label: "Über 45 min", value: 46 },
+const categoryOptions = [
+    { label: "Vegetarisch", value: "vegetarian" },
+    { label: "High Protein", value: "high-protein" },
 ];
 
-const TimeFilterOverlay = ({ selectedTime, onSelect }) => {
+const CategoryFilterOverlay = ({ selectedCategory, onSelect }) => {
     return (
         <div className="flex flex-col gap-6">
             <button
@@ -20,12 +16,13 @@ const TimeFilterOverlay = ({ selectedTime, onSelect }) => {
                 Filter zurücksetzen
             </button>
             <div className="flex flex-wrap gap-3">
-                {timeOptions.map((option) => (
+                {categoryOptions.map((option) => (
                     <Pill
-                        key={option.label}
+                        key={option.value}
+                        variant="rounded"
                         icon={false}
-                        active={selectedTime === option.value}
-                        onClick={() => onSelect(option.value)}
+                        active={selectedCategory === option.value}
+                        onClick={() => onSelect(option.value === selectedCategory ? null : option.value)}
                     >
                         {option.label}
                     </Pill>
@@ -35,4 +32,4 @@ const TimeFilterOverlay = ({ selectedTime, onSelect }) => {
     );
 };
 
-export default TimeFilterOverlay;
+export default CategoryFilterOverlay;

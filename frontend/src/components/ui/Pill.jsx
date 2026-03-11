@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { CaretDown } from "@phosphor-icons/react";
 
 const pillVariants = cva(
-    "flex items-center gap-2 px-4 py-2 text-text-default text-sm min-h-12 whitespace-nowrap transition-colors bg-alternative-bg",
+    "flex items-center gap-2 px-6 py-2 text-text-default text-sm min-h-12 whitespace-nowrap transition-colors bg-bg-light-gray",
     {
         variants: {
             variant: {
@@ -19,10 +19,13 @@ const pillVariants = cva(
 );
 
 
-const Pill = ({ children, icon = true, className, variant, onClick, ...props }) => {
+const Pill = ({ children, icon = true, className, variant, onClick, active, ...props }) => {
     return (
         <button
-            className={cn(pillVariants({ variant, className }))}
+            className={cn(
+                pillVariants({ variant, className }),
+                active && "bg-brand-teal text-text-inverted"
+            )}
             onClick={onClick}
             {...props}
         >

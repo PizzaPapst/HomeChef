@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft } from "@phosphor-icons/react";
-import { CardIconButton } from "./ui/CardIconButton";
+import { XIcon } from "@phosphor-icons/react";
+import { IconButton } from "./ui/IconButton";
+import Searchbar from "./ui/Searchbar";
 import { cn } from "@/lib/utils";
 
 const FilterOverlay = ({ isOpen, onClose, title, children, showSearch = false, searchValue = "", onSearchChange }) => {
@@ -26,35 +27,33 @@ const FilterOverlay = ({ isOpen, onClose, title, children, showSearch = false, s
         >
             <div
                 className={cn(
-                    "absolute inset-0 bg-custom-bg flex flex-col pt-6 px-4 shadow-2xl transition-transform duration-300 ease-out",
+                    "absolute inset-0 bg-bg-alternation flex flex-col shadow-2xl transition-transform duration-300 ease-out",
                     isOpen ? "translate-y-0" : "translate-y-full"
                 )}
                 onClick={(e) => e.stopPropagation()}
                 onTransitionEnd={handleAnimationEnd}
             >
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
-                    <CardIconButton onClick={onClose}>
-                        <ArrowLeft size={20} weight="bold" />
-                    </CardIconButton>
+                <div className="flex items-center p-4 bg-white border-b border-border-default">
+                    <IconButton variant="ghost" onClick={onClose}>
+                        <XIcon size={20} weight="bold" />
+                    </IconButton>
 
                     {showSearch ? (
-                        <div className="relative flex-1">
-                            <input
-                                type="text"
-                                className="w-full h-14 bg-white border border-border rounded-xl px-4 text-text-default placeholder:text-text-subinfo focus:outline-none focus:ring-2 focus:ring-brand-teal/20"
-                                placeholder="Zutaten durchsuchen"
-                                value={searchValue}
-                                onChange={(e) => onSearchChange(e.target.value)}
-                            />
-                        </div>
+                        <Searchbar
+                            variant="minimal"
+                            placeholder="Zutaten durchsuchen"
+                            value={searchValue}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            className="flex-1"
+                        />
                     ) : (
-                        <h2 className="text-xl font-semibold text-text-default">{title}</h2>
+                        <h2 className="text-base text-text-default">{title}</h2>
                     )}
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto pb-10">
+                <div className="flex-1 overflow-y-auto p-4">
                     {children}
                 </div>
             </div>

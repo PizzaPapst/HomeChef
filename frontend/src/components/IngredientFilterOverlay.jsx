@@ -27,21 +27,17 @@ const IngredientFilterOverlay = ({ ingredients, selectedIngredients, onToggle, s
                 </button>
             )}
             <div className="flex flex-wrap gap-3">
-                {filteredAndSortedIngredients.map((ingredient) => {
-                    const isActive = selectedIngredients.includes(ingredient);
-                    return (
-                        <Pill
-                            key={ingredient}
-                            className={cn(
-                                "h-12 px-6",
-                                isActive && "bg-brand-teal text-white hover:bg-brand-teal/90"
-                            )}
-                            onClick={() => onToggle(ingredient)}
-                        >
-                            {ingredient}
-                        </Pill>
-                    );
-                })}
+                {filteredAndSortedIngredients.map((ingredient) => (
+                    <Pill
+                        key={ingredient}
+                        variant="rounded"
+                        icon={false}
+                        active={selectedIngredients.includes(ingredient)}
+                        onClick={() => onToggle(ingredient)}
+                    >
+                        {ingredient}
+                    </Pill>
+                ))}
                 {filteredAndSortedIngredients.length === 0 && (
                     <p className="text-text-subinfo italic py-10 w-full text-center">Keine Zutaten gefunden.</p>
                 )}

@@ -19,14 +19,14 @@ export default function Cookbook() {
   }, [apiUrl]);
 
   return (
-    <div className="flex flex-col gap-8 h-full bg-white px-4 pt-4 pb-24 overflow-hidden">
+    <div className="flex flex-col h-full bg-bg-alternation pb-24 overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-start flex-shrink-0">
+      <div className="flex justify-between items-start flex-shrink-0 bg-white p-4">
         <Searchbar variant="button" placeholder="Rezept suchen" />
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex flex-col gap-8 flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex flex-col gap-8 flex-1 overflow-y-auto no-scrollbar p-4 ">
         {/* Featured Section */}
         <section className="flex-shrink-0 flex flex-col gap-0">
           <RecipeSectionHeader title="Vorschlag des Tages" showAll={false} />
@@ -43,23 +43,48 @@ export default function Cookbook() {
         <section className="relative flex-shrink-0">
           <RecipeSectionHeader
             title="Schnelle Rezepte"
-            onShowAll={() => navigate("/recipes/category/quick")}
+            onShowAll={() => navigate("/search/results?time=30")}
           />
           <div className="flex gap-3 overflow-x-auto no-scrollbar">
             {recipes.length > 0 ? (
               recipes
-                .filter(recipe => recipe.categories?.some(c => c.name === "Schnell"))
+                .filter(recipe => recipe.prepTime && recipe.prepTime <= 30)
                 .slice(0, 5)
                 .map(recipe => (
                   <RecipeCard
-                    key={`small-${recipe.id}`}
+                    key={`small-quick-${recipe.id}`}
                     variant="small"
                     recipe={recipe}
                   />
                 ))
             ) : (
               [1, 2, 3].map(i => (
-                <div key={i} className="w-[160px] h-[180px] bg-bg-light-gray rounded-[12px] animate-pulse flex-shrink-0" />
+                <div key={`skeleton-quick-${i}`} className="w-[160px] h-[180px] bg-bg-light-gray rounded-[12px] animate-pulse flex-shrink-0" />
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="relative flex-shrink-0">
+          <RecipeSectionHeader
+            title="Kalorienarm"
+            onShowAll={() => navigate("/search/results?calories=600")}
+          />
+          <div className="flex gap-3 overflow-x-auto no-scrollbar">
+            {recipes.length > 0 ? (
+              recipes
+                .filter(recipe => recipe.calories && recipe.calories <= 600)
+                .slice(0, 5)
+                .map(recipe => (
+                  <RecipeCard
+                    key={`small-calories-${recipe.id}`}
+                    variant="small"
+                    recipe={recipe}
+                  />
+                ))
+            ) : (
+              [1, 2, 3].map(i => (
+                <div key={`skeleton-calories-${i}`} className="w-[160px] h-[180px] bg-bg-light-gray rounded-[12px] animate-pulse flex-shrink-0" />
               ))
             )}
           </div>

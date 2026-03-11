@@ -14,8 +14,7 @@ export default {
 				]
 			},
 			colors: {
-				'custom-bg': '#FCFDFD',
-				'alternative-bg': '#F1F4F4',
+				'bg-alternation': '#FCFDFD',
 				'brand-teal': '#28AFB0',
 				'brand-teal-10': '#E5F5F6',
 				'brand-teal-20': '#D5EFF1',

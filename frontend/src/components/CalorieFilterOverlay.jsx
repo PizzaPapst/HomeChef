@@ -2,15 +2,15 @@ import React from 'react';
 import { Pill } from "./ui/Pill";
 import { cn } from "@/lib/utils";
 
-const timeOptions = [
+const calorieOptions = [
     { label: "Alle", value: null },
-    { label: "Bis 15 min", value: 15 },
-    { label: "Bis 30 min", value: 30 },
-    { label: "Bis 45 min", value: 45 },
-    { label: "Über 45 min", value: 46 },
+    { label: "Bis 400 kcal", value: 400 },
+    { label: "Bis 600 kcal", value: 600 },
+    { label: "Bis 800 kcal", value: 800 },
+    { label: "Über 800 kcal", value: 801 },
 ];
 
-const TimeFilterOverlay = ({ selectedTime, onSelect }) => {
+const CalorieFilterOverlay = ({ selectedCalories, onSelect }) => {
     return (
         <div className="flex flex-col gap-6">
             <button
@@ -20,11 +20,11 @@ const TimeFilterOverlay = ({ selectedTime, onSelect }) => {
                 Filter zurücksetzen
             </button>
             <div className="flex flex-wrap gap-3">
-                {timeOptions.map((option) => (
+                {calorieOptions.map((option) => (
                     <Pill
                         key={option.label}
                         icon={false}
-                        active={selectedTime === option.value}
+                        active={selectedCalories === option.value}
                         onClick={() => onSelect(option.value)}
                     >
                         {option.label}
@@ -35,4 +35,4 @@ const TimeFilterOverlay = ({ selectedTime, onSelect }) => {
     );
 };
 
-export default TimeFilterOverlay;
+export default CalorieFilterOverlay;
