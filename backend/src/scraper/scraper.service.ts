@@ -7,7 +7,7 @@ import { AiService } from '../ai/ai.service';
 // --- NEU: Import für den Parser ---
 import { parseIngredient } from 'parse-ingredient';
 import { CreateRecipeDto } from '../recipes/dto/create-recipe.dto';
-import { normalizeIngredientName } from '../recipes/ingredient-utils';
+import { normalizeIngredientName, cleanIngredientName } from '../recipes/ingredient-utils';
 import { SocialMediaService } from './social-media.service';
 
 // Interface für das Rückgabe-Format unserer Fetcher
@@ -286,8 +286,9 @@ export class ScraperService {
       // Fall A2: Es ist ein String
       if (typeof ing === 'string') {
         try {
-          // WICHTIG: Komma zu Punkt wandeln
-          const cleanIng = ing.replace(',', '.').replace(/\s+/g, ' ').trim();
+          // WICHTIG: Komma zu Punkt wandeln + Zusätze wie (n) entfernen
+          const cleanedForParsing = cleanIngredientName(ing.replace(',', '.'));
+          const cleanIng = cleanedForParsing.replace(/\s+/g, ' ').trim();
 
           // Parsen mit deutscher Config + alternates: []
           const parsed = parseIngredient(cleanIng, {

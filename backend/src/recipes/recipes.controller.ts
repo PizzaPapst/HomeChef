@@ -16,16 +16,30 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { RecipesService } from './recipes.service';
+import { AnalysisService } from './analysis.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 
 @Controller('recipes')
 export class RecipesController {
-  constructor(private readonly recipesService: RecipesService) { }
+  constructor(
+    private readonly recipesService: RecipesService,
+    private readonly analysisService: AnalysisService,
+  ) { }
 
   @Get('analyze')
   async analyze(@Query('url') url: string) {
     return this.recipesService.analyzeRecipe(url);
+  }
+
+  @Post('analyze-ingredients')
+  async analyzeIngredients(@Body() body: { title: string; ingredients: string[] }) {
+    return this.analysisService.analyzeIngredients(body.title, body.ingredients);
+  }
+
+  @Get('ping')
+  ping() {
+    return { status: 'ok', timestamp: new Date().toISOString() };
   }
 
   @Post()

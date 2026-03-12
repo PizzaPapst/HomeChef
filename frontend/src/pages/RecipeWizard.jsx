@@ -26,12 +26,16 @@ const defaultValues = {
   ingredients: [
     { amount: "500", unit: "g", name: "Hackfleisch" }
   ],
-  instructions: [{ step: 1, text: "" }]
+  instructions: [{ step: 1, text: "" }],
+  calories: 0
 };
 
 const UNITS = [
   "g", "kg", "ml", "l", "Stk.", "Pck.", "Dose", "Bd.", "Zehe", "EL", "TL", "Prise", "Spritzer", "Etwas"
 ];
+
+// Entfällt, da wir jetzt den Backend-Proxy nutzen
+// import { translateIngredients } from "@/services/translation";
 
 export default function CreateRecipeWizard({ initialData = null }) {
   const navigate = useNavigate();
@@ -83,13 +87,20 @@ export default function CreateRecipeWizard({ initialData = null }) {
     if (step === 2) {
       isValid = await trigger(["title", "servings", "prepTime"]);
     }
-    // NEU: Schritt 3: Zutaten prüfen
+    // Schritt 3: Zutaten prüfen + Kalorien berechnen
     else if (step === 3) {
-      // "ingredients" prüft das komplette Array auf Fehler (z.B. required)
       isValid = await trigger("ingredients");
+      if (isValid) {
+        // Starte Kalorienberechnung im Hintergrund
+        fetchCalories();
+      }
     }
-    // Schritt 4: Zubereitung (Optional oder auch prüfen)
+    // Schritt 4: Kalorien bestätigen
     else if (step === 4) {
+      isValid = await trigger("calories");
+    }
+    // Schritt 5: Zubereitung
+    else if (step === 5) {
       isValid = await trigger("instructions");
     }
     else {
@@ -97,6 +108,42 @@ export default function CreateRecipeWizard({ initialData = null }) {
     }
 
     if (isValid) setStep((s) => s + 1);
+  };
+
+  const fetchCalories = async () => {
+    const ingredients = watchedIngredients;
+    const title = watch("title");
+    
+    // Namen für das Backend vorbereiten
+    const namesOnly = ingredients.map(ing => {
+      // Wir senden Menge + Einheit + Name als String, 
+      // damit das Backend (Edamam) es korrekt parsen kann.
+      return `${ing.amount} ${ing.unit} ${ing.name}`.trim();
+    });
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/recipes/analyze-ingredients`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: title,
+          ingredients: namesOnly,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.calories) {
+          const servings = watch("servings") || 1;
+          const caloriesPerServing = Math.round(data.calories / servings);
+          setValue("calories", caloriesPerServing);
+        }
+      }
+    } catch (e) {
+      console.error("Fehler bei der Kalorienberechnung via Backend-Proxy:", e);
+    }
   };
 
   const prevStep = () => {
@@ -127,7 +174,8 @@ export default function CreateRecipeWizard({ initialData = null }) {
         ingredients: data.ingredients.map(ing => ({
           ...ing,
           amount: Number(ing.amount) // Auch hier sicherstellen
-        }))
+        })),
+        calories: Number(data.calories)
       };
 
       // 3. Request senden
@@ -162,17 +210,19 @@ export default function CreateRecipeWizard({ initialData = null }) {
       case 1: return "Import";
       case 2: return "Basisdaten";
       case 3: return "Zutaten";
-      case 4: return "Zubereitung";
+      case 4: return "Kalorien";
+      case 5: return "Zubereitung";
       default: return "";
     }
   };
 
   const calculateStep = () => {
+    const totalSteps = initialData ? 4 : 5;
     if (!initialData) {
-      return `Schritt ${step} von ${4}`
+      return `Schritt ${step} von ${totalSteps}`;
     }
-    else return `Schritt ${step - 1} von ${3}`
-  }
+    else return `Schritt ${step - 1} von ${totalSteps - 1}`;
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -191,7 +241,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
         <div className="h-2 w-full bg-border-default rounded-full overflow-hidden">
           <div
             className="h-full bg-brand-teal rounded-full transition-all duration-500 ease-out"
-            style={{ width: initialData ? `${((step - 1) / 3) * 100}%` : `${(step / 4) * 100}%` }}
+            style={{ width: initialData ? `${((step - 1) / 4) * 100}%` : `${(step / 5) * 100}%` }}
           />
         </div>
       </div>
@@ -404,7 +454,32 @@ export default function CreateRecipeWizard({ initialData = null }) {
           </div>
         )}
 
+        {/* SCHRITT 4: KALORIEN */}
         {step === 4 && (
+          <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
+            <div className="flex flex-1 flex-col items-center text-center gap-4 justify-center">
+               <div className="bg-brand-teal-10 h-[80px] w-[80px] rounded-full flex items-center justify-center">
+                  <Clock size={36} className="text-brand-teal" weight="bold" />
+                </div>
+                <h2 className="text-2xl font-bold">Kalorien überprüfen</h2>
+                <p className="text-text-subinfo leading-relaxed">
+                  Basierend auf deinen Zutaten haben wir die Kalorien geschätzt. Du kannst diese hier anpassen.
+                </p>
+                <div className="w-full max-w-[200px]">
+                  <Label htmlFor="calories">Kalorien (kcal)</Label>
+                  <Input 
+                    id="calories"
+                    type="number"
+                    {...register("calories")}
+                    className="text-center text-2xl font-bold h-16"
+                  />
+                </div>
+            </div>
+          </div>
+        )}
+
+        {/* SCHRITT 5: ZUBEREITUNG */}
+        {step === 5 && (
           <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
             {instructionFields.map((field, index) => (
               <div key={field.id} className="flex flex-1 flex-col gap-0">
@@ -463,7 +538,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
           {step === 1 ? "Abbrechen" : "Zurück"}
         </Button>
 
-        {step < 4 ? (
+        {step < 5 ? (
           <Button
             variant="primary"
             onClick={step === 1 ? handleImport : nextStep}

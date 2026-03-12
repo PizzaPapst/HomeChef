@@ -3,7 +3,7 @@ import { Minus, Plus } from "@phosphor-icons/react";
 
 export function PortionStepper({ servings, onUpdate }) {
   return (
-    <div className="flex items-center justify-between bg-alternative-bg pl-4 pr-2 py-2 rounded-lg">
+    <div className="flex items-center justify-between bg-bg-light-gray pl-4 pr-2 py-2 rounded-lg">
       <span className="flex">
         Für <span className="font-semibold w-[36px] flex justify-center">{servings}</span> Portionen
       </span>

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Clock, Fire, ArrowLeft, DotsThreeVertical } from "@phosphor-icons/react";
 import { PortionStepper } from "@/components/PortionStepper";
 import IngredientEntry from "../components/IngredientEntry";
-import CookingStep from "@/components/CookingStep";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/IconButton";
 import { FlyoutMenu } from "@/components/FlyoutMenu";
@@ -86,7 +85,7 @@ export default function RecipeDetail() {
           <img
             src={image}
             alt={recipe.title}
-            className="object-cover w-full aspect-[1/1] rounded-bl-2xl rounded-br-2xl"
+            className="object-cover w-full aspect-[1/1]"
           />
 
           <div className="flex flex-col gap-4 w-full px-4">
@@ -98,10 +97,12 @@ export default function RecipeDetail() {
                 <p>{recipe.prepTime} Min.</p>
               </div>
 
-              <div className="flex justify-center gap-1 text-text-subinfo">
-                <Fire size={22} />
-                <p>{"Platzhalter"} kcal</p>
-              </div>
+              {recipe.calories > 0 && (
+                <div className="flex justify-center gap-1 text-text-subinfo">
+                  <Fire size={22} />
+                  <p>{recipe.calories} kcal</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -128,7 +129,7 @@ export default function RecipeDetail() {
         <div className="flex flex-col gap-4 px-4 pb-12">
           <h2 className="font-semibold text-lg">Zubereitung</h2>
           {recipe.instructions && recipe.instructions.map((item, index) => (
-            <CookingStep key={index} step={item.step} text={item.text} />
+            <p>{item.text}</p>
           ))}
         </div>
       </div>
@@ -139,7 +140,7 @@ export default function RecipeDetail() {
         onClick={() => navigate(-1)}
         className="absolute top-4 left-4 z-50"
       >
-        <ArrowLeft size={24} weight="bold" />
+        <ArrowLeft size={20} weight="bold" />
       </IconButton>
 
       <div className="absolute top-4 right-4 z-50">
@@ -148,7 +149,7 @@ export default function RecipeDetail() {
             <IconButton
               variant="floating"
             >
-              <DotsThreeVertical size={24} weight="bold" />
+              <DotsThreeVertical size={20} weight="bold" />
             </IconButton>
           }
           items={menuItems}

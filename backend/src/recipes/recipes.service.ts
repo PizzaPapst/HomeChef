@@ -1,23 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common'; // NotFoundException importieren!
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScraperService } from '../scraper/scraper.service';
 import { normalizeIngredientName } from './ingredient-utils';
-import { calculateTotalCalories } from './calorie-utils';
 
 @Injectable()
 export class RecipesService {
+  private readonly logger = new Logger(RecipesService.name);
+
   constructor(
     private prisma: PrismaService,
-    private scraperService: ScraperService, // <--- Hier injizieren wir den Scraper
+    private scraperService: ScraperService,
   ) { }
 
   async findAll(category?: string) {
     const where: any = {};
 
     if (category) {
-      // Map frontend category slugs to DB names
       const categoryNameMap = {
         quick: 'Schnell',
         vegetarian: 'Vegetarisch',
@@ -45,7 +45,6 @@ export class RecipesService {
   }
 
   async analyzeRecipe(url: string) {
-    // Ruft den Scraper, speichert aber NICHTS in der DB
     return await this.scraperService.scrapeRecipe(url);
   }
 
@@ -65,9 +64,9 @@ export class RecipesService {
           })),
         },
         instructions: {
-          create: data.instructions, // Passt auch direkt
+          create: data.instructions,
         },
-        calories: calculateTotalCalories(data.ingredients),
+        calories: data.calories,
       } as any,
     });
 
@@ -75,9 +74,7 @@ export class RecipesService {
     return this.findOne(recipe.id);
   }
 
-
   async findOne(id: number) {
-    console.log(`[RecipesService] Searching for recipe with ID: ${id} (Type: ${typeof id})`);
     const recipe = await (this.prisma as any).recipe.findUnique({
       where: { id: id },
       include: {
@@ -92,11 +89,9 @@ export class RecipesService {
     } as any);
 
     if (!recipe) {
-      console.warn(`[RecipesService] Recipe with ID ${id} NOT found in database.`);
       throw new NotFoundException(`Rezept mit der ID ${id} nicht gefunden`);
     }
 
-    console.log(`[RecipesService] Recipe found: ${recipe.title}`);
     return recipe;
   }
 
@@ -110,22 +105,15 @@ export class RecipesService {
 
     const targetCategories: string[] = [];
 
-    // 1. "Schnell" logic
     if (recipe.prepTime && recipe.prepTime <= 30) {
       targetCategories.push('Schnell');
     }
 
-    // Future logic (placeholder for user's requested categories)
-    // if (isVegetarian(recipe)) targetCategories.push('Vegetarisch');
-    // if (recipe.calories && recipe.calories <= 500) targetCategories.push('Kalorienarm');
-    // ...
-
-    // Update relations
     await (this.prisma as any).recipe.update({
       where: { id },
       data: {
         categories: {
-          set: [], // Clear old
+          set: [],
           connectOrCreate: targetCategories.map((name) => ({
             where: { name },
             create: { name },
@@ -145,23 +133,18 @@ export class RecipesService {
         servings: updateRecipeDto.servings,
         prepTime: updateRecipeDto.prepTime,
 
-        // --- ZUTATEN ---
-        // Prüfung: Sind Zutaten im Update enthalten?
         ingredients: updateRecipeDto.ingredients
           ? {
-            deleteMany: {}, // 1. Alles löschen
+            deleteMany: {},
             create: updateRecipeDto.ingredients.map((ing) => ({
-              // 2. Neu anlegen
               name: ing.name,
               normalizedName: normalizeIngredientName(ing.name),
               amount: ing.amount,
               unit: ing.unit,
             })),
           }
-          : undefined, // Wenn keine Zutaten im DTO -> Prisma ignoriert das Feld (ändert nichts)
+          : undefined,
 
-        // --- ANLEITUNGEN ---
-        // Gleiche Logik hier:
         instructions: updateRecipeDto.instructions
           ? {
             deleteMany: {},
@@ -172,9 +155,7 @@ export class RecipesService {
           }
           : undefined,
 
-        calories: updateRecipeDto.ingredients
-          ? calculateTotalCalories(updateRecipeDto.ingredients)
-          : undefined,
+        calories: updateRecipeDto.calories,
       } as any,
     });
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'; // <--- 1. Importieren
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,6 +9,7 @@ import { MealPlannerModule } from './mealPlanner/meal-planner.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DailyRecipeModule } from './daily-recipe/daily-recipe.module';
 import { SearchHistoryModule } from './search-history/search-history.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -23,4 +24,10 @@ import { SearchHistoryModule } from './search-history/search-history.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('*');
+  }
+}

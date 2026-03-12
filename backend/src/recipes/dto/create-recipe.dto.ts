@@ -68,4 +68,8 @@ export class CreateRecipeDto {
   @ValidateNested({ each: true })
   @Type(() => InstructionDto)
   instructions: InstructionDto[];
+
+  @IsNumber()
+  @IsOptional()
+  calories?: number;
 }

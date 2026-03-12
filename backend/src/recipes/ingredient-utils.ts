@@ -42,3 +42,14 @@ export function normalizeIngredientName(name: string): string {
     // 4. Final cleanup
     return normalized.trim();
 }
+
+/**
+ * Entleert eine Zutaten-Bezeichnung von unnötigen Zusätzen wie (n), (aus Hartweizengrieß) etc.
+ */
+export function cleanIngredientName(name: string): string {
+    if (!name) return "";
+    return name
+        .replace(/\(.*?\)/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
