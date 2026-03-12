@@ -49,6 +49,9 @@ services:
       - DATABASE_URL=postgresql://user:password@rezept_db:5432/rezept_db?schema=public
       # - OLLAMA_URL=http://ollama:11434/api/generate
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - EDAMAM_APP_ID=${EDAMAM_APP_ID}
+      - EDAMAM_APP_KEY=${EDAMAM_APP_KEY}
+      - DEEPL_KEY=${DEEPL_KEY}
       - HF_MODEL_CACHE=/app/data/whisper-models
     volumes:
       # Whisper-Modell-Cache: Verhindert erneuten Download bei jedem Neustart (~150MB)
