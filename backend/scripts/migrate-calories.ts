@@ -35,44 +35,34 @@ async function translateIngredients(ingredients: string[]): Promise<string[]> {
   return ingredients;
 }
 
-async function fetchEdamamCalories(title: string, ingredients: string[]): Promise<number | null> {
-  const appId = process.env.EDAMAM_APP_ID;
-  const appKey = process.env.EDAMAM_APP_KEY;
+async function fetchSpoonacularCalories(title: string, ingredients: string[]): Promise<number | null> {
+  const apiKey = process.env.SPOONACULAR_API_KEY;
 
-  if (!appId || !appKey) {
-    console.warn('Edamam Credentials fehlen in .env');
+  if (!apiKey || apiKey === 'DEIN_SPOONACULAR_KEY_HIER_EINTRAGEN') {
+    console.warn('Spoonacular API Key fehlt in .env');
     return null;
   }
 
   try {
-    const response = await fetch(`https://api.edamam.com/api/nutrition-details?app_id=${appId}&app_key=${appKey}`, {
+    const response = await fetch(`https://api.spoonacular.com/recipes/analyze?apiKey=${apiKey}&includeNutrition=true`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         title: title,
-        ingr: ingredients,
+        ingredients: ingredients,
       }),
     });
 
     const data: any = await response.json();
 
     if (response.ok) {
-      let totalCalories = data.calories;
-      if (!totalCalories && data.totalNutrients?.ENERC_KCAL?.quantity) {
-        totalCalories = data.totalNutrients.ENERC_KCAL.quantity;
-      }
-      if (!totalCalories && data.ingredients) {
-        totalCalories = data.ingredients.reduce((acc: number, ing: any) => {
-          const kcal = ing.parsed?.[0]?.nutrients?.ENERC_KCAL?.quantity || 0;
-          return acc + kcal;
-        }, 0);
-      }
-      return totalCalories ? Math.round(totalCalories) : null;
+      const caloriesNutrient = data.nutrition?.nutrients?.find((n: any) => n.name === 'Calories');
+      return caloriesNutrient ? Math.round(caloriesNutrient.amount) : null;
     }
   } catch (e) {
-    console.error(`Fehler bei Edamam Abfrage: ${e.message}`);
+    console.error(`Fehler bei Spoonacular Abfrage: ${e.message}`);
   }
 
   return null;
@@ -101,7 +91,7 @@ async function main() {
     );
 
     const translated = await translateIngredients(ingredientNames);
-    const totalCalories = await fetchEdamamCalories(recipe.title, translated);
+    const totalCalories = await fetchSpoonacularCalories(recipe.title, translated);
 
     if (totalCalories) {
       const caloriesPerServing = Math.round(totalCalories / recipe.servings);
@@ -114,8 +104,8 @@ async function main() {
       console.log(`❌ ${recipe.title}: Kalorien konnten nicht berechnet werden.`);
     }
     
-    // Kleiner Sleep um Rate Limits zu vermeiden
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Kleiner Sleep um Rate Limits zu vermeiden (Spoonacular Free Tier: 1 req/sec)
+    await new Promise(resolve => setTimeout(resolve, 3000));
   }
 
   console.log('Migration abgeschlossen!');

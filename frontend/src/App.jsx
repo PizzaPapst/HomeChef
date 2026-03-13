@@ -22,7 +22,7 @@ function App() {
 
   return (
     // pb-24 (Padding unten) brauchen wir nur, wenn die Nav da ist, sonst stört der Platz
-    <div className="bg-bg-alternation h-[100dvh] font-sans flex flex-col overflow-hidden">
+    <div className="bg-gradient-to-br from-[#f8f9f8] via-[#fef8fa] to-[#f8fdfb] h-[100dvh] font-sans flex flex-col overflow-hidden">
       <ScrollToTop />
 
       <Routes>

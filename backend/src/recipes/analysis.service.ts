@@ -8,8 +8,8 @@ export class AnalysisService {
     this.logger.log(`Analyse startet für: ${title}`);
     const translatedIngredients = await this.translateIngredients(ingredients);
     this.logger.log(`Übersetzung fertig: ${translatedIngredients.join(', ')}`);
-    const calories = await this.fetchEdamamCalories(title, translatedIngredients);
-    this.logger.log(`Edamam Ergebnis: ${calories} kcal`);
+    const calories = await this.fetchSpoonacularCalories(title, translatedIngredients);
+    this.logger.log(`Spoonacular Ergebnis: ${calories} kcal`);
     return { calories };
   }
 
@@ -46,56 +46,48 @@ export class AnalysisService {
     return ingredients;
   }
 
-  private async fetchEdamamCalories(title: string, ingredients: string[]): Promise<number | null> {
-    const appId = process.env.EDAMAM_APP_ID;
-    const appKey = process.env.EDAMAM_APP_KEY;
+  private async fetchSpoonacularCalories(title: string, ingredients: string[]): Promise<number | null> {
+    const apiKey = process.env.SPOONACULAR_API_KEY;
 
-    if (!appId || !appKey) {
-      this.logger.warn('Edamam Credentials fehlen in .env');
+    if (!apiKey || apiKey === 'DEIN_SPOONACULAR_KEY_HIER_EINTRAGEN') {
+      this.logger.warn('Spoonacular API Key fehlt in .env');
       return null;
     }
 
     try {
-      this.logger.log(`Sende an Edamam: ${JSON.stringify({ title, ingr: ingredients })}`);
-      const response = await fetch(`https://api.edamam.com/api/nutrition-details?app_id=${appId}&app_key=${appKey}`, {
+      this.logger.log(`Sende an Spoonacular: ${JSON.stringify({ title, ingredients })}`);
+      
+      // Spoonacular "Analyze Recipe" endpoint
+      // Wir senden es als JSON POST mit includeNutrition=true
+      const response = await fetch(`https://api.spoonacular.com/recipes/analyze?apiKey=${apiKey}&includeNutrition=true`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           title: title,
-          ingr: ingredients,
+          ingredients: ingredients,
         }),
       });
 
       const data: any = await response.json();
 
       if (response.ok) {
-        // Fallback-Kette: 1. data.calories | 2. data.totalNutrients.ENERC_KCAL | 3. Summe der Einzelzutaten
-        let totalCalories = data.calories;
-
-        if (!totalCalories && data.totalNutrients?.ENERC_KCAL?.quantity) {
-          totalCalories = data.totalNutrients.ENERC_KCAL.quantity;
-        }
-
-        if (!totalCalories && data.ingredients) {
-          totalCalories = data.ingredients.reduce((acc: number, ing: any) => {
-            const kcal = ing.parsed?.[0]?.nutrients?.ENERC_KCAL?.quantity || 0;
-            return acc + kcal;
-          }, 0);
-        }
-
-        if (totalCalories !== undefined && totalCalories !== null && totalCalories > 0) {
-          return Math.round(totalCalories);
+        // Spoonacular liefert nutrition.nutrients als Array
+        // Wir suchen nach "Calories"
+        const caloriesNutrient = data.nutrition?.nutrients?.find((n: any) => n.name === 'Calories');
+        
+        if (caloriesNutrient) {
+          return Math.round(caloriesNutrient.amount);
         } else {
-          this.logger.warn(`Edamam lieferte keine brauchbaren Kalorien zurück. Body-Keys: ${Object.keys(data).join(', ')}`);
+          this.logger.warn(`Spoonacular lieferte keine Kalorien zurück.`);
           return null;
         }
       } else {
-        this.logger.error(`Edamam API Fehler (${response.status}): ${JSON.stringify(data)}`);
+        this.logger.error(`Spoonacular API Fehler (${response.status}): ${JSON.stringify(data)}`);
       }
     } catch (e) {
-      this.logger.error(`Fehler bei Edamam Abfrage: ${e.message}`);
+      this.logger.error(`Fehler bei Spoonacular Abfrage: ${e.message}`);
     }
 
     return null;
