@@ -3,7 +3,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight } from "@phosphor-icons/react";
 import Searchbar from "../components/ui/Searchbar";
 import { Pill } from "../components/ui/Pill";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
+import Header from "../components/ui/Header";
+import { IconButton } from "../components/ui/IconButton";
+import { ArrowLeft } from "@phosphor-icons/react";
 import FilterOverlay from "../components/FilterOverlay";
 import TimeFilterOverlay from "../components/TimeFilterOverlay";
 import IngredientFilterOverlay from "../components/IngredientFilterOverlay";
@@ -156,8 +159,18 @@ export default function SearchPage() {
 
     return (
         <div className="flex flex-col h-screen bg-white overflow-hidden">
-            {/* Header / Searchbar */}
-            <div className="p-4 border-b border-border-default bg-white">
+            {/* Header */}
+            <Header className="px-0">
+                <div className="flex items-center">
+                    <IconButton variant="ghost" onClick={() => navigate("/")}>
+                        <ArrowLeft size={20} weight="bold" />
+                    </IconButton>
+                    <h1 className="text-xl text-text-primary">Suche</h1>
+                </div>
+            </Header>
+
+            {/* Body / Filter Section */}
+            <div className="flex flex-col gap-8 p-4 flex-1 overflow-y-auto no-scrollbar bg-bg-alternation overscroll-contain">
                 <Searchbar
                     ref={searchInputRef}
                     variant="default"
@@ -169,10 +182,6 @@ export default function SearchPage() {
                         if (e.key === 'Enter') handleSearch(searchQuery);
                     }}
                 />
-            </div>
-
-            {/* Body / Filter Section */}
-            <div className="flex flex-col gap-8 p-4 flex-1 overflow-y-auto no-scrollbar bg-bg-alternation">
                 <div className="flex gap-2 overflow-x-auto no-scrollbar shrink-0">
                     <Pill onClick={() => setActiveFilter('time')} active={!!selectedTime}>
                         {getFilterLabel('time')}
@@ -191,11 +200,11 @@ export default function SearchPage() {
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-3">
                         <h3 className="text-sm font-medium text-text-default font-['Poppins']">Letzte Suchanfragen</h3>
-                        <div className="flex flex-col rounded-sm overflow-hidden">
+                        <div className="flex flex-col rounded-sm overflow-hidden border border-border-default">
                             {recentSearches.map((item, index) => (
                                 <button
                                     key={index}
-                                    className="flex justify-between items-center px-3 bg-bg-light-gray min-h-12 border-b border-white last:border-b-0"
+                                    className=" bg-white flex justify-between items-center px-3 min-h-12 border-b border-white last:border-b-0"
                                     onClick={() => handleSearch(item.term, item.filters)}
                                 >
                                     <span className={`text-sm ${item.term ? 'text-text-default' : 'text-text-subinfo'}`}>{item.term || "Leere Suche"}</span>

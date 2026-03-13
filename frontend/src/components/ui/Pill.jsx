@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { CaretDown } from "@phosphor-icons/react";
 
 const pillVariants = cva(
-    "flex items-center gap-2 px-6 py-2 text-text-default text-sm min-h-12 whitespace-nowrap transition-colors bg-bg-light-gray",
+    "flex items-center gap-2 px-6 py-2 text-text-default text-sm min-h-12 whitespace-nowrap transition-colors bg-white border border-border-default",
     {
         variants: {
             variant: {

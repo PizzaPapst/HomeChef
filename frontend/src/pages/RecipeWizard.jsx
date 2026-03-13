@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import Header from "../components/ui/Header";
 
 // Standard-Werte
 const defaultValues = {
@@ -113,14 +114,14 @@ export default function CreateRecipeWizard({ initialData = null }) {
   const fetchCalories = async () => {
     const ingredients = watchedIngredients;
     const title = watch("title");
-    
+
     // Namen für das Backend vorbereiten
     const namesOnly = ingredients.map(ing => {
       // Wir senden Menge + Einheit + Name als String, 
       // damit das Backend (Edamam) es korrekt parsen kann.
       return `${ing.amount} ${ing.unit} ${ing.name}`.trim();
     });
-    
+
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/recipes/analyze-ingredients`, {
         method: 'POST',
@@ -229,10 +230,10 @@ export default function CreateRecipeWizard({ initialData = null }) {
   }, [step]);
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden">
+    <div className="flex flex-col h-full bg-bg-alternation overflow-hidden">
 
       {/* --- HEADER --- */}
-      <div className="flex-none bg-white p-4 flex flex-col gap-2 border-b border-border-default z-10">
+      <Header className="flex-col items-stretch h-auto py-4 gap-2">
         <div className="flex justify-between items-end">
           <h1 className="text-sm font-medium tracking-tight">{calculateStep()}</h1>
           <span className="text-sm text-text-subinfo font-medium">{getStepName()}</span>
@@ -244,10 +245,10 @@ export default function CreateRecipeWizard({ initialData = null }) {
             style={{ width: initialData ? `${((step - 1) / 4) * 100}%` : `${(step / 5) * 100}%` }}
           />
         </div>
-      </div>
+      </Header>
 
       {/* --- CONTENT AREA --- */}
-      <div className="flex flex-1 flex-col p-4 overflow-y-auto no-scrollbar">
+      <div className="flex flex-1 flex-col p-4 overflow-y-auto no-scrollbar overscroll-contain">
 
         {/* SCHRITT 1: IMPORT */}
         {step === 1 && (
@@ -281,6 +282,20 @@ export default function CreateRecipeWizard({ initialData = null }) {
                     onChange={(e) => setImportUrl(e.target.value)}
                   />
                 </div>
+
+                <p className="text-text-subinfo">oder</p>
+
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={() => {
+                    reset(defaultValues);
+                    setStep(2);
+                  }}
+                  className="w-full max-w-[200px] rounded-full border border-border-default bg-white"
+                >
+                  Manuell hinzufügen
+                </Button>
               </>
             )}
           </div>
@@ -319,25 +334,22 @@ export default function CreateRecipeWizard({ initialData = null }) {
               <Label>Portionen</Label>
               <div className="flex items-center justify-between border border-border-default rounded-l h-12 px-2 bg-white">
                 <span className="pl-2 text-lg font-medium">{currentServings}</span>
-                <div className="flex items-center gap-4 pr-2">
+                <div className="flex items-center">
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
                     onClick={() => setValue("servings", Math.max(1, currentServings - 1))}
-                    className="text-brand-teal p-1 w-10 h-10"
+                    className="w-12 p-0"
                   >
-                    <Minus size={24} weight="bold" />
+                    <Minus size={20} weight="bold" />
                   </Button>
-                  <div className="h-6 w-px bg-gray-200"></div>
                   <Button
                     type="button"
                     variant="ghost"
-                    size="sm"
                     onClick={() => setValue("servings", currentServings + 1)}
-                    className="text-brand-teal p-1 w-10 h-10"
+                    className="w-12 p-0"
                   >
-                    <Plus size={24} weight="bold" />
+                    <Plus size={20} weight="bold" />
                   </Button>
                 </div>
               </div>
@@ -354,14 +366,9 @@ export default function CreateRecipeWizard({ initialData = null }) {
         {/* SCHRITT 3: ZUTATEN */}
         {step === 3 && (
           <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col">
               {ingredientFields.map((field, index) => (
-                <div key={field.id} className="flex gap-4 items-center animate-in fade-in slide-in-from-bottom-2">
-
-                  {/* Drag Handle */}
-                  <div className="text-text-subinfo">
-                    <DotsSixVertical size={24} />
-                  </div>
+                <div key={field.id} className="flex items-center animate-in fade-in slide-in-from-bottom-2">
 
                   {/* Input Box Container */}
                   <div className="flex-1 flex flex-col border border-border-default rounded-lg bg-white shadow-sm">
@@ -436,7 +443,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
                     onClick={() => removeIngredient(index)}
                     className="p-2"
                   >
-                    <Trash size={28} />
+                    <Trash size={20} />
                   </Button>
                 </div>
               ))}
@@ -458,22 +465,22 @@ export default function CreateRecipeWizard({ initialData = null }) {
         {step === 4 && (
           <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
             <div className="flex flex-1 flex-col items-center text-center gap-4 justify-center">
-               <div className="bg-brand-teal-10 h-[80px] w-[80px] rounded-full flex items-center justify-center">
-                  <Clock size={36} className="text-brand-teal" weight="bold" />
-                </div>
-                <h2 className="text-2xl font-bold">Kalorien überprüfen</h2>
-                <p className="text-text-subinfo leading-relaxed">
-                  Basierend auf deinen Zutaten haben wir die Kalorien geschätzt. Du kannst diese hier anpassen.
-                </p>
-                <div className="w-full max-w-[200px]">
-                  <Label htmlFor="calories">Kalorien (kcal)</Label>
-                  <Input 
-                    id="calories"
-                    type="number"
-                    {...register("calories")}
-                    className="text-center text-2xl font-bold h-16"
-                  />
-                </div>
+              <div className="bg-brand-teal-10 h-[80px] w-[80px] rounded-full flex items-center justify-center">
+                <Clock size={36} className="text-brand-teal" weight="bold" />
+              </div>
+              <h2 className="text-2xl font-bold">Kalorien überprüfen</h2>
+              <p className="text-text-subinfo leading-relaxed">
+                Basierend auf deinen Zutaten haben wir die Kalorien geschätzt. Du kannst diese hier anpassen.
+              </p>
+              <div className="w-full max-w-[200px]">
+                <Label htmlFor="calories">Kalorien (kcal)</Label>
+                <Input
+                  id="calories"
+                  type="number"
+                  {...register("calories")}
+                  className="text-center text-2xl font-bold h-16"
+                />
+              </div>
             </div>
           </div>
         )}

@@ -4,29 +4,26 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Searchbar from "../components/ui/Searchbar";
+import Header from "../components/ui/Header";
+import { fetchAllRecipes } from "@/services/api";
 
 export default function Cookbook() {
   const navigate = useNavigate();
   const [recipes, setRecipes] = useState([]);
-  const apiUrl = import.meta.env.VITE_API_URL;
-
   useEffect(() => {
-    if (!apiUrl) return;
-    fetch(`${apiUrl}/recipes`)
-      .then(res => res.json())
-      .then(data => setRecipes(data))
-      .catch(err => console.error('Error loading recipes:', err));
-  }, [apiUrl]);
+    fetchAllRecipes().then(data => setRecipes(data));
+  }, []);
 
   return (
     <div className="flex flex-col h-full bg-bg-alternation pb-24 overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-start flex-shrink-0 bg-white p-4">
-        <Searchbar variant="button" placeholder="Rezept suchen" />
-      </div>
+      <Header>
+        <h1 className="text-xl text-text-primary">Kochbuch</h1>
+      </Header>
 
       {/* Scrollable Content */}
-      <div className="flex flex-col gap-8 flex-1 overflow-y-auto no-scrollbar p-4 ">
+      <div className="flex flex-col gap-8 flex-1 overflow-y-auto no-scrollbar p-4 overscroll-contain">
+        <Searchbar variant="button" placeholder="Rezept suchen" />
         {/* Featured Section */}
         <section className="flex-shrink-0 flex flex-col gap-0">
           <RecipeSectionHeader title="Vorschlag des Tages" showAll={false} />

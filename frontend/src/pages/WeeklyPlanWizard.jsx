@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { addDays, eachDayOfInterval, format } from "date-fns";
 import { de } from "date-fns/locale";
 import { DateRangePicker } from "../components/DateRangePicker";
+import Header from "../components/ui/Header";
 
 // --- NEUE IMPORTS ---
 import { fetchAllRecipes, saveWeeklyPlan } from "@/services/api";
@@ -171,7 +172,7 @@ export default function WeeklyPlanWizard() {
     <div className="flex flex-col h-full bg-white overflow-hidden">
 
       {/* --- HEADER --- */}
-      <div className="flex-none bg-white p-4 flex flex-col gap-2 border-b border-border-default z-10">
+      <Header className="flex-col items-stretch h-auto py-4 gap-2">
         <div className="flex justify-between items-end">
           <h1 className="text-sm font-medium tracking-tight">Schritt {step} von {totalSteps}</h1>
           <span className="text-sm text-text-subinfo font-medium">{getStepName()}</span>
@@ -182,7 +183,7 @@ export default function WeeklyPlanWizard() {
             style={{ width: `${(step / totalSteps) * 100}%` }}
           />
         </div>
-      </div>
+      </Header>
 
       {/* --- CONTENT AREA --- */}
       <div className="flex flex-1 flex-col p-4 overflow-y-auto no-scrollbar">

@@ -4,68 +4,49 @@ import { cn } from '../../lib/utils'
 import { useNavigate } from 'react-router-dom'
 
 const Searchbar = React.forwardRef(({
-    variant = 'default',
     placeholder,
     className,
     value,
     filterCount = 0,
-    onBackClick,
     icon: Icon = MagnifyingGlass,
+    variant = 'default',
     ...props
 }, ref) => {
 
     const navigate = useNavigate();
-    console.log(value)
-    const variants = {
-        default: "flex items-center justify-start gap-2 w-full h-14 px-6 bg-white border border-border-default rounded-full shadow-sm",
-        minimal: "bg-transparent rounded-none h-14 px-6 w-full",
-    }
 
-    const button = (
-        <button
-            className={cn(
-                "flex items-center gap-2 w-full h-14 px-6 bg-white border border-border-default rounded-full shadow-sm",
-                (value && value.trim() !== "") ? "justify-between" : "justify-center",
-                className
-            )}
-            onClick={props.onClick || (() => navigate("/search"))}
-        >
-            <div className="flex items-center gap-2 overflow-hidden">
-                {!value && <MagnifyingGlass size={20} weight="bold" className="text-text-subinfo shrink-0" />}
+    if (variant === "button") {
+        return (
+            <button
+                className={cn(
+                    "flex gap-2 w-full min-h-12 items-center px-6 bg-white border border-border-default rounded-full",
+                    className
+                )}
+                onClick={props.onClick || (() => navigate("/search"))}
+            >
+
+                <MagnifyingGlass size={20} weight="bold" className="text-text-subinfo shrink-0" />
+
                 <span className={cn(
-                    "text-base font-normal truncate",
+                    "text-base font-normal truncate flex-1 text-left",
                     (value && value.trim() !== "") ? "text-text-default" : "text-text-subinfo"
                 )}>
                     {value || placeholder || "Leere Suche"}
                 </span>
-            </div>
-            {filterCount > 0 && (
-                <span className="text-text-subinfo text-sm font-medium shrink-0">+{filterCount}</span>
-            )}
-        </button>
-    )
 
-    const searchbar = (
+                {filterCount > 0 && (
+                    <span className="text-text-subinfo text-sm font-medium shrink-0">+{filterCount}</span>
+                )}
+            </button>
+        )
+    }
+
+    return (
         <div className={cn(
-            "relative flex items-center w-full min-h-14 transition-all duration-200 group",
-            variants[variant] || variants.default,
+            "flex items-center w-full min-h-12 px-6 bg-white border border-border-default rounded-full",
             className
         )}>
-            {(variant === 'default' || onBackClick) && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (onBackClick) {
-                            onBackClick();
-                        } else {
-                            navigate("/");
-                        }
-                    }}
-                    className="p-2 rounded-full hover:bg-bg-light-gray transition-colors shrink-0"
-                >
-                    <ArrowLeft size={20} weight="bold" className="text-text-default" />
-                </button>
-            )}
+            <Icon size={20} weight="bold" className="text-text-subinfo shrink-0 mr-2" />
             <input
                 ref={ref}
                 type="text"
@@ -76,13 +57,6 @@ const Searchbar = React.forwardRef(({
             />
         </div>
     )
-
-    if (variant === "button") {
-        return button
-    } else {
-        return searchbar
-    }
-
 })
 
 export default Searchbar

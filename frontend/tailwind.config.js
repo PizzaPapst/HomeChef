@@ -14,7 +14,7 @@ export default {
 				]
 			},
 			colors: {
-				'bg-alternation': '#FCFDFD',
+				'bg-alternation': '#F6F9F9',
 				'brand-teal': '#28AFB0',
 				'brand-teal-10': '#E5F5F6',
 				'brand-teal-20': '#D5EFF1',
@@ -26,6 +26,7 @@ export default {
 				'text-inverted': '#F6F9F9',
 				'border-default': '#DCDFDD',
 				'bg-light-gray': '#F1F4F4',
+				'text-primary': '#145758',
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				card: {
@@ -76,6 +77,7 @@ export default {
 				// Name: 'Wert 1, Wert 2' (kommagetrennt)
 				'card-shadow': '0 1px 2px -1px rgba(0, 0, 0, 0.1), 0 2px 6px 0 rgba(0, 0, 0, 0.1)',
 				'fab-shadow': '0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.3)',
+				'header-shadow': '0 2px 8px 0 rgba(0, 0, 0, 0.05)',
 			}
 		}
 	},

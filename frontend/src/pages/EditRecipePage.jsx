@@ -1,7 +1,9 @@
 import React from 'react'
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import RecipeWizard from "./RecipeWizard"; // Pfad anpassen!
+import RecipeWizard from "./RecipeWizard"; 
+
+import { fetchRecipeById } from "@/services/api";
 
 function EditRecipePage() {
   const { id } = useParams();
@@ -11,17 +13,10 @@ function EditRecipePage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL;
-    
-    // Daten holen
-    fetch(`${apiUrl}/recipes/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Rezept nicht gefunden");
-        return res.json();
-      })
+    setLoading(true);
+    fetchRecipeById(id)
       .then((data) => {
-        // Hier bereiten wir die Daten vor, falls nötig.
-        // Der Wizard erwartet Zahlen bei servings/prepTime, API liefert das meistens auch.
+        if (!data) throw new Error("Rezept nicht gefunden");
         setRecipe(data);
         setLoading(false);
       })

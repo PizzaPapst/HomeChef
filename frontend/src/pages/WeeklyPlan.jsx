@@ -9,6 +9,8 @@ import { de } from "date-fns/locale"; // hinzugefügt
 import { getAllMealPlans } from "@/services/api";
 import { RecipeCard } from "../components/RecipeCard";
 
+import Header from "../components/ui/Header";
+
 export default function WeeklyPlan() {
 
   const navigate = useNavigate();
@@ -33,14 +35,14 @@ export default function WeeklyPlan() {
   // ------------------------------
 
   return (
-    // 'pb-32' sorgt dafür, dass die letzte Karte nicht hinter dem Button verschwindet
-    <div className="px-4 pt-6 min-h-screen bg-white pb-[102px] flex flex-col gap-4">
+    <div className="flex flex-col h-full bg-bg-alternation pb-24 overflow-hidden">
+      {/* Header */}
+      <Header>
+        <h1 className="text-xl text-text-primary">Wochenplan</h1>
+      </Header>
 
-      {/* mb-8 für etwas Abstand zur Liste */}
-      <h1 className="text-2xl font-bold">Wochenplan</h1>
-
-      {/* --- NEU: Listen-Bereich Start --- */}
-      <div className="flex flex-col gap-8">
+      {/* Content */}
+      <div className="flex flex-col gap-6 p-4 flex-1 overflow-y-auto no-scrollbar overscroll-contain">
 
         {isLoading && <p className="text-gray-400 text-sm">Lade Pläne...</p>}
 
@@ -85,10 +87,10 @@ export default function WeeklyPlan() {
       <Button
         variant="fab"
         size="icon"
-        className="fixed bottom-24 right-4 h-[80px] w-[80px] rounded-full z-50 text-text-inverted bg-brand-orange"
+        className="fixed bottom-24 right-4 h-16 w-16 rounded-full z-50 text-text-inverted bg-brand-orange border-none shadow-fab-shadow"
         onClick={() => navigate("/plan/create")}
       >
-        <Plus size={28} weight="bold" />
+        <Plus size={24} weight="bold" />
         <span className="sr-only">Neues Rezept erstellen</span>
       </Button>
     </div>

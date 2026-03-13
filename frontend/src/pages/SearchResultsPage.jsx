@@ -3,6 +3,9 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "@phosphor-icons/react";
 import { RecipeCard } from "../components/RecipeCard";
 import Searchbar from "../components/ui/Searchbar";
+import Header from "../components/ui/Header";
+import { IconButton } from "../components/ui/IconButton";
+import { fetchAllRecipes } from "@/services/api";
 
 const CATEGORY_MAP = {
     vegetarian: "Vegetarisch",
@@ -21,24 +24,16 @@ export default function SearchResultsPage() {
     const selectedCategory = searchParams.get("category") || null;
     const selectedCalories = searchParams.get("calories") ? parseInt(searchParams.get("calories")) : null;
 
-    const apiUrl = import.meta.env.VITE_API_URL;
-
     useEffect(() => {
-        if (!apiUrl) return;
         setLoading(true);
-        // We fetch all recipes for now as client-side filtering is implemented
-        // In a real app with many recipes, we'd fetch with filters
-        fetch(`${apiUrl}/recipes`)
-            .then(res => res.json())
-            .then(data => {
-                setRecipes(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Error loading recipes:', err);
-                setLoading(false);
-            });
-    }, [apiUrl]);
+        fetchAllRecipes().then(data => {
+            setRecipes(data);
+            setLoading(false);
+        }).catch(err => {
+            console.error('Error loading recipes:', err);
+            setLoading(false);
+        });
+    }, []);
 
     const filteredRecipes = useMemo(() => {
         return recipes.filter(r => {
@@ -93,16 +88,23 @@ export default function SearchResultsPage() {
     }, [loading, filteredRecipes.length]);
 
     return (
-        <div className="flex flex-col h-screen bg-white">
+        <div className="flex flex-col h-screen bg-bg-alternation">
             {/* Header */}
-            <div className="flex flex-col border-b border-border-default">
-                <div className="p-4 flex items-center gap-3">
-                    <button
-                        onClick={() => navigate("/")}
-                        className="p-2 -ml-2 rounded-full hover:bg-bg-light-gray transition-colors shrink-0"
-                    >
-                        <ArrowLeft size={24} weight="bold" className="text-text-default" />
-                    </button>
+            <Header className="px-0">
+                <div className="flex items-center">
+                    <IconButton variant="ghost" onClick={() => navigate("/")}>
+                        <ArrowLeft size={20} weight="bold" />
+                    </IconButton>
+                    <h1 className="text-xl text-text-primary">Suchergebnisse</h1>
+                </div>
+            </Header>
+
+            {/* Results */}
+
+
+            <div className="flex-1 p-4 overflow-y-auto no-scrollbar overscroll-contain">
+                <div className="flex flex-col gap-4">
+
                     <Searchbar
                         variant="button"
                         value={searchQuery}
@@ -111,15 +113,6 @@ export default function SearchResultsPage() {
                         onClick={handleReEnterSearch}
                         className="flex-1"
                     />
-                </div>
-            </div>
-
-            {/* Results */}
-            <div className="flex-1 px-4 pt-6 overflow-y-auto no-scrollbar">
-                <div className="flex flex-col gap-4 pb-10">
-                    <h2 className="font-semibold text-lg text-text-default">
-                        {resultTitle}
-                    </h2>
 
                     {!loading && filteredRecipes.length > 0 ? (
                         filteredRecipes.map((recipe) => (
