@@ -12,6 +12,11 @@ services:
     volumes:
       # ÄNDERUNG: Speichert jetzt lokal in deinem Ordner ./data/postgres
       - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d rezept_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: always
 
   # 2. KI (Auskommentiert, aber Pfad für Zukunft angepasst)
@@ -43,7 +48,8 @@ services:
     ports:
       - "3005:3000" # Erreichbar unter Port 3005
     depends_on:
-      - rezept_db
+      rezept_db:
+        condition: service_healthy
       # - ollama
     environment:
       - DATABASE_URL=postgresql://user:password@rezept_db:5432/rezept_db?schema=public
