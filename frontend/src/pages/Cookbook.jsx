@@ -1,11 +1,12 @@
 import { RecipeCard, RecipeSectionHeader } from "../components/RecipeCard";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus } from "@phosphor-icons/react";
+import { Link, useNavigate } from "react-router-dom";
+import { Plus, ArrowRight } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import Searchbar from "../components/ui/Searchbar";
 import Header from "../components/ui/Header";
 import { fetchAllRecipes } from "@/services/api";
+import allFoodImg from "../assets/all_food.jpg";
 
 export default function Cookbook() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function Cookbook() {
         <section className="relative flex-shrink-0">
           <RecipeSectionHeader
             title="Schnelle Rezepte"
-            onShowAll={() => navigate("/search/results?time=30")}
+            onShowAll={() => navigate("/category/schnelle-rezepte")}
           />
           <div className="flex gap-3 overflow-x-auto no-scrollbar">
             {recipes.length > 0 ? (
@@ -65,7 +66,7 @@ export default function Cookbook() {
         <section className="relative flex-shrink-0">
           <RecipeSectionHeader
             title="Kalorienarm"
-            onShowAll={() => navigate("/search/results?calories=600")}
+            onShowAll={() => navigate("/category/kalorienarm")}
           />
           <div className="flex gap-3 overflow-x-auto no-scrollbar">
             {recipes.length > 0 ? (
@@ -86,13 +87,30 @@ export default function Cookbook() {
             )}
           </div>
         </section>
+
+        <Link
+          to="/category/all"
+          className="flex flex-col flex-shrink-0 w-full h-[180px] rounded-[16px] overflow-hidden group shadow-card-shadow bg-brand-teal"
+        >
+          <img
+            src={allFoodImg}
+            alt="Alle Rezepte"
+            className="w-full h-0 flex-1 object-cover rounded-b-2xl"
+          />
+
+          {/* Content Container */}
+          <div className="flex flex-row justify-between items-center text-text-inverted p-4">
+            <h3 className="text-xl font-semibold ">Alle Rezepte</h3>
+            <ArrowRight size={24} weight="bold" />
+          </div>
+        </Link>
       </div>
 
       {/* Floating Action Button */}
       <Button
         variant="fab"
         size="icon"
-        className="fixed bottom-24 right-4 h-16 w-16 rounded-full z-50 text-text-inverted bg-brand-orange border-none shadow-fab-shadow"
+        className="fixed bottom-24 right-4 h-16 w-16 rounded-full z-50 text-text-inverted bg-brand-teal border-none shadow-fab-shadow"
         onClick={() => navigate("/recipe/create")}
       >
         <Plus size={24} weight="bold" />

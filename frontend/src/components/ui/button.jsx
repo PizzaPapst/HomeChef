@@ -15,7 +15,7 @@ const buttonVariants = cva(
         ghost:
           "bg-transparent text-text-default hover:bg-bg-light-gray border-none",
         destructive:
-          "bg-transparent text-red-500 hover:bg-red-50 border-none font-semibold",
+          "bg-transparent text-info-error hover:bg-info-error/10 border-none font-semibold",
       },
       size: {
         default: "h-12 px-6",

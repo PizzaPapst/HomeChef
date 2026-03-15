@@ -39,7 +39,7 @@ function EditRecipePage() {
   if (error) {
     return (
       <div className="p-8 text-center">
-        <p className="text-red-500 mb-4">{error}</p>
+        <p className="text-info-error mb-4">{error}</p>
         <button onClick={() => navigate(-1)} className="underline">Zurück</button>
       </div>
     );

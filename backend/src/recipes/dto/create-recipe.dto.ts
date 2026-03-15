@@ -45,7 +45,8 @@ export class CreateRecipeDto {
   description?: string;
 
   @IsString()
-  sourceUrl: string;
+  @IsOptional()
+  sourceUrl?: string;
 
   @IsString()
   @IsOptional()

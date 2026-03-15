@@ -76,12 +76,37 @@
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
+    /* Safe Area Inset Variables */
+    --sab: env(safe-area-inset-bottom);
+    --sat: env(safe-area-inset-top);
+    --sal: env(safe-area-inset-left);
+    --sar: env(safe-area-inset-right);
   }
 
   body {
     @apply bg-background text-foreground;
     @apply text-text-default;
     @apply overflow-x-hidden;
+    /* Ensure content stays within safe areas by default for the body if needed, 
+       but we handles this more granularly in App.jsx and components */
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+  .mt-safe {
+    margin-top: env(safe-area-inset-top);
+  }
+  .min-h-screen-safe {
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
 }
 

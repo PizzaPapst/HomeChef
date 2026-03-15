@@ -225,7 +225,7 @@ export default function SearchPage() {
             <div className="p-4 bg-white flex flex-col items-center gap-4 border-t border-border-default">
                 {activeFilterCount > 0 || searchQuery ? (
                     <button
-                        className="text-red-500 font-base hover:underline"
+                        className="text-info-error font-base hover:underline"
                         onClick={() => {
                             setSearchQuery("");
                             setSelectedTime(null);

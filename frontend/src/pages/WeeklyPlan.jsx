@@ -44,10 +44,10 @@ export default function WeeklyPlan() {
       {/* Content */}
       <div className="flex flex-col gap-6 p-4 flex-1 overflow-y-auto no-scrollbar overscroll-contain">
 
-        {isLoading && <p className="text-gray-400 text-sm">Lade Pläne...</p>}
+        {isLoading && <p className="text-text-subinfo text-sm">Lade Pläne...</p>}
 
         {!isLoading && plans.length === 0 && (
-          <p className="text-gray-400 text-sm">Noch nichts geplant.</p>
+          <p className="text-text-subinfo text-sm">Noch nichts geplant.</p>
         )}
 
         {plans.map((plan) => {
@@ -62,12 +62,12 @@ export default function WeeklyPlan() {
                   <span className="text-lg font-bold text-brand-teal capitalize">
                     {format(date, "EEEE", { locale: de })}
                   </span>
-                  <span className="text-gray-500 font-medium text-sm">
+                  <span className="text-text-subinfo font-medium text-sm">
                     {format(date, "d MMM", { locale: de })}
                   </span>
                 </div>
                 {/* 3 Punkte Menü Icon */}
-                <button className="text-gray-400 h-14 w-14 flex items-center justify-center">
+                <button className="text-text-subinfo h-14 w-14 flex items-center justify-center">
                   <DotsThreeVertical size={24} weight="bold" />
                 </button>
               </div>
@@ -87,7 +87,7 @@ export default function WeeklyPlan() {
       <Button
         variant="fab"
         size="icon"
-        className="fixed bottom-24 right-4 h-16 w-16 rounded-full z-50 text-text-inverted bg-brand-orange border-none shadow-fab-shadow"
+        className="fixed bottom-24 right-4 h-16 w-16 rounded-full z-50 text-text-inverted bg-brand-teal border-none shadow-fab-shadow"
         onClick={() => navigate("/plan/create")}
       >
         <Plus size={24} weight="bold" />

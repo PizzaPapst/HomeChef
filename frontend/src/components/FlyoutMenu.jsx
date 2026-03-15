@@ -22,7 +22,7 @@ export function FlyoutMenu({ trigger, items, className }) {
                             key={index}
                             onClick={item.onClick}
                             className={cn(
-                                "flex w-full items-center px-4 h-14 text-sm font-medium transition-colors hover:bg-gray-50 text-left first:rounded-t-[8px] last:rounded-b-[8px]",
+                                "flex w-full items-center px-4 h-14 text-sm font-medium transition-colors hover:bg-bg-alternation text-left first:rounded-t-[8px] last:rounded-b-[8px]",
                                 item.className
                             )}
                         >

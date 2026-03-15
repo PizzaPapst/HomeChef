@@ -16,7 +16,7 @@ model Recipe {
   id           Int      @id @default(autoincrement())
   title        String
   description  String?
-  sourceUrl    String   @unique
+  sourceUrl    String?  @unique
   imageUrl     String?  // Externe URL (bleibt als Fallback)
   imageData    Bytes?   // Binäre Bilddaten (BLOB)
   imageType    String?  // Content-Type (z.B. image/jpeg)

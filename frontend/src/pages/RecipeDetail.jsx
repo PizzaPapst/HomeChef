@@ -8,6 +8,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { FlyoutMenu } from "@/components/FlyoutMenu";
 import { deleteRecipe, fetchRecipeById } from "@/services/api";
 import Header from "../components/ui/Header";
+import { cn } from "@/lib/utils";
 
 export default function RecipeDetail() {
   const { id } = useParams();
@@ -16,7 +17,8 @@ export default function RecipeDetail() {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showTitleInHeader, setShowTitleInHeader] = useState(false);
   const [currentServings, setCurrentServings] = useState(0);
 
   useEffect(() => {
@@ -39,10 +41,16 @@ export default function RecipeDetail() {
       });
   }, [id]);
 
+  const handleScroll = (e) => {
+    const scrollTop = e.target.scrollTop;
+    setIsScrolled(scrollTop > 20);
+    setShowTitleInHeader(scrollTop > 320); // Show title after scrolling past hero
+  };
+
   if (loading) return <div className="p-8 text-center text-text-subinfo">Lädt...</div>;
   if (error) return (
     <div className="p-8 flex flex-col items-center gap-4">
-      <p className="text-center text-red-500 font-medium">{error}</p>
+      <p className="text-center text-info-error font-medium">{error}</p>
       <Button onClick={() => navigate("/")}>Zurück zum Kochbuch</Button>
     </div>
   );
@@ -76,24 +84,38 @@ export default function RecipeDetail() {
     {
       label: "Löschen",
       onClick: handleDelete,
-      className: "text-red-500 hover:bg-red-50",
+      className: "text-info-error hover:bg-info-error/10",
     },
   ];
 
   return (
-    <div className="flex flex-col h-full bg-white overflow-hidden pb-20">
+    <div className="flex flex-col h-full bg-white overflow-hidden pb-20 relative">
       {/* Header with Actions */}
-      <Header className="justify-between">
+      <Header 
+        className={cn(
+          "absolute top-0 left-0 right-0 z-50 justify-between transition-all duration-300",
+          isScrolled ? "bg-white shadow-header-shadow" : "bg-transparent shadow-none"
+        )}
+      >
         <IconButton
-          variant="standalone"
+          variant={isScrolled ? "ghost" : "floating"}
           onClick={() => navigate("/")}
         >
           <ArrowLeft size={20} weight="bold" />
         </IconButton>
 
+        <div className={cn(
+          "flex-1 px-4 text-center transition-all duration-300",
+          showTitleInHeader ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+        )}>
+          <h2 className="text-lg font-bold truncate max-w-[200px] mx-auto">
+            {recipe.title}
+          </h2>
+        </div>
+
         <FlyoutMenu
           trigger={
-            <IconButton variant="standalone">
+            <IconButton variant={isScrolled ? "ghost" : "floating"}>
               <DotsThreeVertical size={24} weight="bold" />
             </IconButton>
           }
@@ -101,7 +123,10 @@ export default function RecipeDetail() {
         />
       </Header>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar overscroll-contain">
+      <div 
+        className="flex-1 overflow-y-auto no-scrollbar overscroll-contain"
+        onScroll={handleScroll}
+      >
         {/* Hero Section */}
         <div className="flex flex-col gap-8">
           <div className="flex flex-col gap-4 w-full relative">
@@ -166,4 +191,4 @@ export default function RecipeDetail() {
       </div>
     </div>
   )
-}
+}

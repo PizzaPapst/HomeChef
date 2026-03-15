@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from "react-router-dom";
-import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTop from "./components/helper/ScrollToTop";
 import Cookbook from "./pages/Cookbook";
 import WeeklyPlan from "./pages/WeeklyPlan";
 import RecipeDetail from "./pages/RecipeDetail"; // Importieren
@@ -9,9 +9,11 @@ import SearchPage from "./pages/SearchPage";
 import EditRecipePage from "./pages/EditRecipePage";
 import WeeklyPlanWizard from "./pages/WeeklyPlanWizard";
 import SearchResultsPage from "./pages/SearchResultsPage";
+import CategoryPage from "./pages/CategoryPage";
 
 function App() {
   const location = useLocation();
+
 
   // Liste der Seiten, auf denen die Navigation sichtbar sein soll
   // Alles andere (wie /recipe/123) hat KEINE Navigation.
@@ -22,7 +24,7 @@ function App() {
 
   return (
     // pb-24 (Padding unten) brauchen wir nur, wenn die Nav da ist, sonst stört der Platz
-    <div className="bg-gradient-to-br from-[#f8f9f8] via-[#fef8fa] to-[#f8fdfb] h-[100dvh] font-sans flex flex-col overflow-hidden">
+    <div className="bg-gradient-to-br from-[#f8f9f8] via-[#fef8fa] to-[#f8fdfb] h-[100dvh] font-sans flex flex-col overflow-hidden pt-safe">
       <ScrollToTop />
 
       <Routes>
@@ -30,6 +32,7 @@ function App() {
         <Route path="/plan" element={<WeeklyPlan />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/search/results" element={<SearchResultsPage />} />
+        <Route path="/category/:id" element={<CategoryPage />} />
 
         {/* Der Doppelpunkt :id ist ein Platzhalter für irgendeine Nummer */}
         <Route path="/recipe/:id" element={<RecipeDetail />} />

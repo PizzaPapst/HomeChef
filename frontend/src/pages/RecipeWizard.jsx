@@ -10,12 +10,14 @@ import {
   Minus,
   Trash,
   Check,
-  DotsSixVertical
+  DotsSixVertical,
+  Spinner
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { LabelValueGroup } from "@/components/ui/LabelValueGroup";
 import Header from "../components/ui/Header";
 
 // Standard-Werte
@@ -32,7 +34,7 @@ const defaultValues = {
 };
 
 const UNITS = [
-  "g", "kg", "ml", "l", "Stk.", "Pck.", "Dose", "Bd.", "Zehe", "EL", "TL", "Prise", "Spritzer", "Etwas"
+  "g", "kg", "ml", "l", "Stk.", "Pck.", "Dose", "Bd.", "Zehe", "EL", "TL", "Prise", "Spritzer", "Etwas", "n. B."
 ];
 
 // Entfällt, da wir jetzt den Backend-Proxy nutzen
@@ -42,6 +44,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(initialData ? 2 : 1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCalculatingCalories, setIsCalculatingCalories] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const [openUnitIndex, setOpenUnitIndex] = useState(null); // Track which unit dropdown is open
 
@@ -112,14 +115,15 @@ export default function CreateRecipeWizard({ initialData = null }) {
   };
 
   const fetchCalories = async () => {
+    setIsCalculatingCalories(true);
     const ingredients = watchedIngredients;
     const title = watch("title");
 
     // Namen für das Backend vorbereiten
     const namesOnly = ingredients.map(ing => {
       // Wir senden Menge + Einheit + Name als String, 
-      // damit das Backend (Edamam) es korrekt parsen kann.
-      return `${ing.amount} ${ing.unit} ${ing.name}`.trim();
+      // damit das Backend es korrekt parsen kann.
+      return `${ing.amount || ""} ${ing.unit || ""} ${ing.name}`.trim();
     });
 
     try {
@@ -144,6 +148,8 @@ export default function CreateRecipeWizard({ initialData = null }) {
       }
     } catch (e) {
       console.error("Fehler bei der Kalorienberechnung via Backend-Proxy:", e);
+    } finally {
+      setIsCalculatingCalories(false);
     }
   };
 
@@ -174,7 +180,8 @@ export default function CreateRecipeWizard({ initialData = null }) {
         prepTime: Number(data.prepTime),
         ingredients: data.ingredients.map(ing => ({
           ...ing,
-          amount: Number(ing.amount) // Auch hier sicherstellen
+          // Convert to number if present, otherwise set null
+          amount: ing.amount ? Number(ing.amount) : null
         })),
         calories: Number(data.calories)
       };
@@ -233,7 +240,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
     <div className="flex flex-col h-full bg-bg-alternation overflow-hidden">
 
       {/* --- HEADER --- */}
-      <Header className="flex-col items-stretch h-auto py-4 gap-2">
+      <Header className="flex-col items-stretch py-4 gap-2">
         <div className="flex justify-between items-end">
           <h1 className="text-sm font-medium tracking-tight">{calculateStep()}</h1>
           <span className="text-sm text-text-subinfo font-medium">{getStepName()}</span>
@@ -303,10 +310,10 @@ export default function CreateRecipeWizard({ initialData = null }) {
 
         {/* SCHRITT 2: BASISDATEN */}
         {step === 2 && (
-          <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
+          <div className="flex flex-col flex-1 gap-4 animate-in fade-in slide-in-from-right-8">
 
             {/* Titel */}
-            <div className="flex flex-col flex-1 gap-1">
+            <div className="flex flex-col gap-1">
               <Label htmlFor="title">Titel</Label>
               <Input
                 id="title"
@@ -315,7 +322,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
             </div>
 
             {/* Zubereitungszeit (mit Icon rechts) */}
-            <div className="flex flex-col flex-1 gap-1">
+            <div className="flex flex-col gap-1">
               <Label htmlFor="prepTime">Zubereitungszeit</Label>
               <div className="relative">
                 <Input
@@ -329,17 +336,17 @@ export default function CreateRecipeWizard({ initialData = null }) {
               </div>
             </div>
 
-            {/* Portionen (Custom Stepper wie Screenshot) */}
-            <div className="flex flex-col flex-1 gap-1">
+            {/* Portionen (Custom Stepper) */}
+            <div className="flex flex-col gap-1">
               <Label>Portionen</Label>
-              <div className="flex items-center justify-between border border-border-default rounded-l h-12 px-2 bg-white">
-                <span className="pl-2 text-lg font-medium">{currentServings}</span>
-                <div className="flex items-center">
+              <div className="flex items-center justify-between w-full h-[56px] px-[16px] rounded-[4px] bg-white border border-border-default">
+                <span className="text-base">{currentServings}</span>
+                <div className="flex items-center -mr-2 text-text-subinfo">
                   <Button
                     type="button"
                     variant="ghost"
                     onClick={() => setValue("servings", Math.max(1, currentServings - 1))}
-                    className="w-12 p-0"
+                    className="h-10 w-10 p-0 hover:text-brand-teal"
                   >
                     <Minus size={20} weight="bold" />
                   </Button>
@@ -347,7 +354,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
                     type="button"
                     variant="ghost"
                     onClick={() => setValue("servings", currentServings + 1)}
-                    className="w-12 p-0"
+                    className="h-10 w-10 p-0 hover:text-brand-teal"
                   >
                     <Plus size={20} weight="bold" />
                   </Button>
@@ -366,22 +373,27 @@ export default function CreateRecipeWizard({ initialData = null }) {
         {/* SCHRITT 3: ZUTATEN */}
         {step === 3 && (
           <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-4">
               {ingredientFields.map((field, index) => (
-                <div key={field.id} className="flex items-center animate-in fade-in slide-in-from-bottom-2">
+                <div key={field.id} className="flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
 
                   {/* Input Box Container */}
                   <div className="flex-1 flex flex-col border border-border-default rounded-lg bg-white shadow-sm">
                     {/* Top Row: Amount & Unit */}
                     <div className="flex border-b border-border-default h-14">
-                      <div className="w-[33%] flex items-center px-4">
-                        <input
-                          placeholder="Menge"
-                          {...register(`ingredients.${index}.amount`)}
-                          className="w-full text-lg focus:outline-none placeholder:text-text-subinfo"
-                        />
-                      </div>
-                      <div className="w-px bg-border-default h-full"></div>
+                      {watchedIngredients?.[index]?.unit !== "Etwas" && watchedIngredients?.[index]?.unit !== "n. B." && (
+                        <>
+                          <div className="w-[33%] flex items-center px-4">
+                            <input
+                              placeholder="Menge"
+                              {...register(`ingredients.${index}.amount`)}
+                              className="w-full text-lg focus:outline-none placeholder:text-text-subinfo"
+                            />
+                          </div>
+                          <div className="w-px bg-border-default h-full"></div>
+                        </>
+                      )}
+
                       <div className="flex-1 relative flex items-center">
                         <input
                           placeholder="Einheit"
@@ -472,15 +484,15 @@ export default function CreateRecipeWizard({ initialData = null }) {
               <p className="text-text-subinfo leading-relaxed">
                 Basierend auf deinen Zutaten haben wir die Kalorien geschätzt. Du kannst diese hier anpassen.
               </p>
-              <div className="w-full max-w-[200px]">
-                <Label htmlFor="calories">Kalorien (kcal)</Label>
+              <LabelValueGroup label="Kalorien (kcal)" className="w-full text-left">
                 <Input
                   id="calories"
                   type="number"
                   {...register("calories")}
-                  className="text-center text-2xl font-bold h-16"
+                  className=""
+                  endAdornment={isCalculatingCalories && <Spinner size={20} className="animate-spin text-brand-teal" />}
                 />
-              </div>
+              </LabelValueGroup>
             </div>
           </div>
         )}
@@ -489,13 +501,13 @@ export default function CreateRecipeWizard({ initialData = null }) {
         {step === 5 && (
           <div className="flex flex-col flex-1 gap-8 animate-in fade-in slide-in-from-right-8">
             {instructionFields.map((field, index) => (
-              <div key={field.id} className="flex flex-1 flex-col gap-0">
+              <div key={field.id} className="flex flex-col gap-2">
 
                 {/* Header Zeile: Schritt Nummer links, Löschen rechts */}
                 <div className="flex justify-between items-center">
-                  <h3 className="flex items-center text-brand-teal font-semibold text-lg h-12">
+                  <Label className="">
                     Schritt {index + 1}
-                  </h3>
+                  </Label>
 
                   <Button
                     type="button"
@@ -511,7 +523,7 @@ export default function CreateRecipeWizard({ initialData = null }) {
                 {/* Das Textfeld */}
                 <Textarea
                   {...register(`instructions.${index}.text`, { required: true })}
-                  className="w-full max-w-full min-h-[140px] max-h-[calc(100dvh-200px)] [field-sizing:content] overflow-y-auto break-all text-base leading-relaxed border-gray-200 rounded-xl focus-visible:ring-teal-500 bg-white resize-none p-4 shadow-sm"
+                  className="w-full max-w-full min-h-[140px] max-h-[calc(100dvh-200px)] [field-sizing:content] overflow-y-auto break-all text-base leading-relaxed border-border-default rounded-xl focus-visible:ring-brand-teal bg-white resize-none p-4 shadow-sm"
                   placeholder="Beschreibe, was in diesem Schritt passiert..."
                 />
               </div>

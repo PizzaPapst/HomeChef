@@ -16,7 +16,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { addDays, eachDayOfInterval, format } from "date-fns";
 import { de } from "date-fns/locale";
-import { DateRangePicker } from "../components/DateRangePicker";
 import Header from "../components/ui/Header";
 
 // --- NEUE IMPORTS ---
@@ -198,7 +197,6 @@ export default function WeeklyPlanWizard() {
             <p className="text-text-subinfo max-w-xs">
               Wähle den Start- und Endzeitpunkt für deinen neuen Wochenplan.
             </p>
-            <DateRangePicker date={date} setDate={setDate} />
           </div>
         )}
 
@@ -236,7 +234,7 @@ export default function WeeklyPlanWizard() {
                           variant="ghost"
                           size="icon"
                           onClick={() => rerollDay(dateKey)}
-                          className="text-gray-400 hover:text-brand-teal h-14 w-14"
+                          className="text-text-subinfo hover:text-brand-teal h-14 w-14"
                           title="Zufälliges Rezept"
                         >
                           <ArrowsClockwise size={20} weight="bold" />
@@ -244,7 +242,7 @@ export default function WeeklyPlanWizard() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-gray-400 hover:text-brand-teal h-14 w-14"
+                          className="text-text-subinfo hover:text-brand-teal h-14 w-14"
                         >
                           <DotsThreeVertical size={24} weight="bold" />
                         </Button>
@@ -261,9 +259,9 @@ export default function WeeklyPlanWizard() {
                       ) : (
                         <div
                           onClick={() => openSelection(dateKey)}
-                          className="aspect-[16/9] w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-gray-100 hover:border-brand-teal-20 transition-all active:scale-[0.98]"
+                          className="aspect-[16/9] w-full bg-bg-alternation border-2 border-dashed border-border-default rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-bg-alternation hover:border-brand-teal-20 transition-all active:scale-[0.98]"
                         >
-                          <div className="bg-white p-3 rounded-full shadow-sm text-gray-400 group-hover:text-brand-teal transition-colors">
+                          <div className="bg-white p-3 rounded-full shadow-sm text-text-subinfo group-hover:text-brand-teal transition-colors">
                             <Plus size={24} weight="bold" />
                           </div>
                           <span className="text-sm font-medium text-text-subinfo group-hover:text-brand-teal transition-colors">
@@ -296,7 +294,7 @@ export default function WeeklyPlanWizard() {
                 <div
                   key={recipe.id}
                   onClick={() => selectRecipeForDay(recipe)}
-                  className="flex items-center gap-4 p-2 active:bg-gray-50 rounded-xl transition-colors border border-transparent active:border-border-default"
+                  className="flex items-center gap-4 p-2 active:bg-bg-alternation rounded-xl transition-colors border border-transparent active:border-border-default"
                 >
                   <img
                     src={recipe.imageUrl || "https://images.unsplash.com/photo-1543353071-087092ec393a?q=80&w=1000&auto=format&fit=crop"}
@@ -307,7 +305,7 @@ export default function WeeklyPlanWizard() {
                     <h3 className="font-bold text-lg">{recipe.title}</h3>
                     <p className="text-sm text-text-subinfo">{recipe.prepTime} Min.</p>
                   </div>
-                  <CaretRight size={20} className="text-gray-300" />
+                  <CaretRight size={20} className="text-text-subinfo" />
                 </div>
               ))}
             </div>
@@ -319,7 +317,7 @@ export default function WeeklyPlanWizard() {
       <div className="flex-none p-4 bg-white border-t border-border-default flex justify-between items-center z-20">
         <button
           onClick={prevStep}
-          className="flex items-center gap-2 text-text-default px-4 py-2 hover:text-gray-600 text-sm"
+          className="flex items-center gap-2 text-text-default px-4 py-2 hover:opacity-80 text-sm"
         >
           <ArrowLeft size={16} weight="bold" />
           {step === 1 ? "Abbrechen" : "Zurück"}
@@ -329,14 +327,14 @@ export default function WeeklyPlanWizard() {
           <Button
             onClick={nextStep}
             disabled={isLoading}
-            className="bg-brand-teal hover:bg-teal-600 text-white rounded-l px-4 py-2 text-sm font-medium flex items-center gap-2"
+            className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-l px-4 py-2 text-sm font-medium flex items-center gap-2"
           >
             {isLoading ? "Laden..." : "Plan erstellen"} <ArrowRight size={16} weight="bold" />
           </Button>
         ) : (
           <Button
             onClick={handleSubmit(onSubmit)}
-            className="bg-brand-teal hover:bg-teal-600 text-white rounded-l px-4 py-2 font-medium text-sm flex items-center gap-2"
+            className="bg-brand-teal hover:bg-brand-teal/90 text-white rounded-l px-4 py-2 font-medium text-sm flex items-center gap-2"
           >
             Speichern <Check size={16} weight="bold" />
           </Button>
